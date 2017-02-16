@@ -1,0 +1,25 @@
+{
+  "name": "cabalites",
+  "version": "0.0.1",
+  "description": "",
+  "main": "app/index.html",
+  "dependencies": {
+    "pixi.js": "^4.3.4",
+    "seedrandom": "^2.4.2",
+    "webpack": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/pixi.js": "^4.3.1",
+    "source-map-loader": "^0.1.6",
+    "ts-loader": "^2.0.0",
+    "typescript": "^2.1.5",
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.3.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node_modules/.bin/webpack-dev-server"
+  },
+  "author": "",
+  "license": "ISC"
+}
