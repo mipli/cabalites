@@ -11,9 +11,9 @@ export class TurnTaker extends Component {
   }
 
   takeTurn() {
-    const action = this.controller.getAction();
+    const actions = this.controller.getActions();
     return {
-      action: action,
+      actions: actions,
       time: 100
     }
   }

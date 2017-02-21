@@ -13,6 +13,8 @@ export class Component {
   registerEntity(entity: IEntity) {
     this._entity = entity;
   }
-  
+
   initialize() { }
+
+  delete() { }
 }

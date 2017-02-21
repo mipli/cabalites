@@ -9,9 +9,11 @@ export class EntityManager {
   private static instance: EntityManager;
 
   private entities: {[guid: string]: any[]};
+  private deletion: IEntity[];
 
   private constructor() {
     this.entities = {};
+    this.deletion = [];
   }
 
   static getInstance(): EntityManager {
@@ -25,6 +27,26 @@ export class EntityManager {
     const guid = Core.Utils.generateGuid();
     return {
       guid: guid
+    }
+  }
+
+  public deleteEntity(entity: IEntity) {
+    this.deletion.push(entity);
+  }
+
+  public getEntity(entity: IEntity) {
+    return this.entities[entity.guid];
+  }
+
+  public clearDeletedEntities() {
+    while(this.deletion.length > 0) {
+      let entity = this.deletion.pop();
+      this.entities[entity.guid].map((component) => {
+        component.delete();
+        return null;
+      });
+      delete this.entities[entity.guid];
+      entity = null;
     }
   }
 

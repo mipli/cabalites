@@ -5,57 +5,58 @@ import * as Core from './core';
 import InputHandler from './InputHandler';
 
 export default class InputController implements IController {
-  private action: Actions.IAction;
+  private actions: Actions.IAction[];
   private active: boolean;
 
   constructor(private entity: IEntity, private entityManager: EntityManager, private inputHandler: InputHandler) {
     this.active = false;
+    this.actions = [];
     this.bindMovement();
   }
 
-  getAction() {
+  getActions() {
     this.active = true;
-    const action = this.action;
-    if (this.action) {
+    const actions = this.actions;
+    if (this.actions.length > 0) {
       this.active = false;
-      const current = this.action;
-      this.action = null;
+      const current = this.actions;
+      this.actions = [];
       return current;
     }
-    return null;
+    return [];
   }
 
   private bindMovement() {
     this.bindKeyCode(InputHandler.KEY_H, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.West);
+      this.addMovementAction(Core.Directions.West);
     });
 
     this.bindKeyCode(InputHandler.KEY_Y, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.NorthWest);
+      this.addMovementAction(Core.Directions.NorthWest);
     });
 
     this.bindKeyCode(InputHandler.KEY_L, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.East);
+      this.addMovementAction(Core.Directions.East);
     });
 
     this.bindKeyCode(InputHandler.KEY_U, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.NorthEast);
+      this.addMovementAction(Core.Directions.NorthEast);
     });
 
     this.bindKeyCode(InputHandler.KEY_J, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.South);
+      this.addMovementAction(Core.Directions.South);
     });
 
     this.bindKeyCode(InputHandler.KEY_B, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.SouthWest);
+      this.addMovementAction(Core.Directions.SouthWest);
     });
 
     this.bindKeyCode(InputHandler.KEY_K, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.North);
+      this.addMovementAction(Core.Directions.North);
     });
 
     this.bindKeyCode(InputHandler.KEY_N, () => {
-      this.action = new Actions.WalkAction(this.entity, Core.Directions.SouthEast);
+      this.addMovementAction(Core.Directions.SouthEast);
     });
   }
 
@@ -65,5 +66,10 @@ export default class InputController implements IController {
         func();
       }
     });
+  }
+
+  private addMovementAction(direction: Core.DirectionInfo) {
+      this.actions.push(new Actions.WalkAction(this.entity, direction));
+      this.actions.push(new Actions.OpenAction(this.entity, direction));
   }
 }

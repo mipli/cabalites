@@ -8,6 +8,11 @@ export class DungeonGenerator {
   private backgroundColor: Core.Color;
   private foregroundColor: Core.Color;
 
+  private _rooms: Map.Room[];
+
+  get rooms() { return this._rooms }
+
+
   constructor(width: number, height: number) {
     this.width = width;
     this.height = height;
@@ -18,18 +23,20 @@ export class DungeonGenerator {
 
   private generateMap(): number[][] {
     let cells: number[][] = Core.Utils.buildMatrix(this.width, this.height, 1);
-    let roomGenerator = new Map.RoomGenerator(cells);
+    const roomGenerator = new Map.RoomGenerator(cells);
 
     roomGenerator.generate();
     cells = roomGenerator.getCells();
 
-    let mazeGenerator = new Map.MazeRecursiveBacktrackGenerator(cells);
+    this._rooms = roomGenerator.getRooms();
+
+    const mazeGenerator = new Map.MazeRecursiveBacktrackGenerator(cells);
     mazeGenerator.generate();
     cells = mazeGenerator.getCells();
 
     cells = mazeGenerator.getCells();
 
-    let topologyCombinator = new Map.TopologyCombinator(cells);
+    let topologyCombinator = new Map.TopologyCombinator(cells, this._rooms);
     topologyCombinator.initialize();
     let remainingTopologies = topologyCombinator.combine();
     if (remainingTopologies > 5) {

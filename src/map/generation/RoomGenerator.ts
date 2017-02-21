@@ -3,6 +3,7 @@ import * as Map from '../index';
 
 export class RoomGenerator {
   private cells: number[][];
+  private rooms: Map.Room[];
 
   private width: number;
   private height: number;
@@ -10,12 +11,13 @@ export class RoomGenerator {
   private maxAttempts: number;
 
   constructor(cells: number[][], maxAttempts: number = 500) {
+    this.maxAttempts = maxAttempts;
     this.cells = cells;
 
     this.width = this.cells.length;
     this.height = this.cells[0].length;
 
-    this.maxAttempts = maxAttempts;
+    this.rooms = [];
   }
 
   private isSpaceAvailable(x: number, y: number, width: number, height: number) {
@@ -63,9 +65,10 @@ export class RoomGenerator {
     if (this.isSpaceAvailable(x, y, width, height)) {
         for (var i = x; i < x + width; i++) {
             for (var j = y; j < y + height; j++) {
-              this.cells[i][j] = 0;    
+              this.cells[i][j] = 0;
             }
         }
+        this.rooms.push(new Map.Room(x - 1, y - 1, width + 2, height + 2));
         return true;
     }
 
@@ -74,5 +77,9 @@ export class RoomGenerator {
 
   getCells() {
     return this.cells;
+  }
+
+  getRooms() {
+    return this.rooms;
   }
 }

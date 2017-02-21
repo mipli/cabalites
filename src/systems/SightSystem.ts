@@ -31,7 +31,7 @@ export class SightSystem implements IContinuousSystem {
       const position = <Components.Position>(<any>obj.components).position;
       const knowledge = <Components.Knowledge>(<any>obj.components).knowledge;
       this.fov.init((position) => {
-        return this.map.tiles[position.x][position.y].blocksSight;
+        return this.map.tiles[position.x][position.y].blocksSight(obj.entity);
       }, this.map.width, this.map.height, sight.radius);
       const visibility = this.fov.calculate(position.vector)
       sight.setTileVisibility(visibility);

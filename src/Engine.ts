@@ -142,16 +142,24 @@ export default class Engine {
     for (let obj of this.entityManager.iterateEntityAndComponents(['turnTaker'])) {
       const turnTaker = <Components.TurnTaker>(<any>obj.components).turnTaker;
       const turn: any = turnTaker.takeTurn();
-      if (turn.action) {
-        for (let system of this.reactiveSystems) {
-          turn.action = system.process(turn.action);
+      let actionPerformed = false;
+      if (turn.actions.length > 0) {
+        while (!actionPerformed && turn.actions.length > 0) {
+          let action = turn.actions.shift();
+          if (action) {
+            for (let system of this.reactiveSystems) {
+              action = system.process(action);
+            }
+            if (!action.cancelled) {
+              actionPerformed = action.perform();
+            }
+          }
         }
-        if (!turn.action.cancelled) {
-          turn.action.perform();
-        }
+        this.entityManager.clearDeletedEntities();
         for (let system of this.continuousSystems) {
           system.process();
         }
+        this.entityManager.clearDeletedEntities();
       }
     }
     for (let processor of this.continuousProcessors) {

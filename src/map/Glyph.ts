@@ -94,17 +94,16 @@ export class Glyph {
 	public static CHAR_BULLET_SQUARE : number =  254;
 
   private _glyph: number;
-  get glyph() {
-    return this._glyph;
-  }
+  get glyph() { return this._glyph; }
+  set glyph(value) { this._glyph = value; }
+
   private _foregroundColor: Core.Color;
-  get foregroundColor() {
-    return this._foregroundColor;
-  }
+  get foregroundColor() { return this._foregroundColor; }
+  set foregroundColor(value) { this._foregroundColor = value; }
+
   private _backgroundColor: Core.Color;
-  get backgroundColor() {
-    return this._backgroundColor;
-  }
+  get backgroundColor() { return this._backgroundColor; }
+  set backgroundColor(value) { this._backgroundColor = value; }
 
   constructor(g: string | number = Glyph.CHAR_SPACE, f: Core.Color = 0xffffff, b: Core.Color = 0x000000) {
     this._glyph = typeof g === 'string' ? g.charCodeAt(0) : g;

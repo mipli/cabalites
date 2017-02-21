@@ -19,7 +19,7 @@ export class CollisionSystem implements IReactiveSystem {
 
   process(action: Actions.IAction): Actions.IAction {
     if (action.type !== 'walk') {
-      return null;
+      return action;
     }
     const walkAction: Actions.WalkAction = <Actions.WalkAction>action;
     const tile = this.map.getTile(walkAction.newPosition);
@@ -27,11 +27,16 @@ export class CollisionSystem implements IReactiveSystem {
       walkAction.cancelled = true;
     }
 
-    if (!walkAction.cancelled && tile.entity) {
-      const collidableComponent: Components.Collidable = this.entityManager.getComponent(tile.entity, 'collidable');
-      if (collidableComponent) {
-        walkAction.cancelled = true;
-      }
+    if (!walkAction.cancelled) {
+      const entities = tile.getEntities();
+      entities.some((entity) => {
+        const flags = <Components.Flags>this.entityManager.getComponent(entity, 'flags');
+        if (flags.isCollidable) {
+          walkAction.cancelled = true;
+          return true;
+        }
+        return false;
+      });
     }
     return walkAction;
   }

@@ -10,11 +10,15 @@ export class TopologyCombinator {
 
   private topologyId: number;
 
-  constructor(cells: number[][]) {
+  private rooms: Map.Room[];
+
+  constructor(cells: number[][], rooms: Map.Room[]) {
     this.cells = cells;
 
     this.width = this.cells.length;
     this.height = this.cells[0].length;
+
+    this.rooms = rooms;
 
     this.topologies = [];
 
@@ -71,7 +75,7 @@ export class TopologyCombinator {
       edges.splice(idx, 1);
       let surroundingTiles = Map.Utils.countSurroundingTiles(this.cells, edge);
       if (surroundingTiles === 2) {
-        this.cells[edge.x][edge.y] = 0;
+        this.carveOpening(edge);
         this.topologies[edge.x][edge.y] = a;
         if (edges.length >= 4) {
           if (Core.Random.getFloat() > 0.2) {
@@ -93,6 +97,15 @@ export class TopologyCombinator {
       }
     }
     return combined;
+  }
+
+  private carveOpening(point: Core.Vector2) {
+    this.cells[point.x][point.y] = 0;
+    this.rooms.forEach((room: Map.Room) => {
+      if (room.contains(point)) {
+        room.addOpening(point);
+      }
+    });
   }
 
   private getEdges(a: number, b: number) {
@@ -140,6 +153,11 @@ export class TopologyCombinator {
     if (this.cells[position.x][position.y] === 0) {
       let surroundingTiles = Map.Utils.countSurroundingTiles(this.cells, new Core.Vector2(position.x, position.y));
       if (surroundingTiles <= 1) {
+        this.rooms.forEach((room: Map.Room) => {
+          if (room.contains(position)) {
+            room.removeOpening(position);
+          }
+        });
         this.cells[position.x][position.y] = 1;
         const neighbours = Map.Utils.getNeighbours(position, this.width, this.height, true);
         neighbours.forEach((neighbour) => {

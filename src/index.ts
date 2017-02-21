@@ -13,7 +13,26 @@ if (hash) {
   });
 }
 
+import {EntityManager} from './EntityManager';
 import Game from './Game';
+
+window.addEventListener('keydown', (event) => {
+  if (event.keyCode === 70) { //F
+    (<any>window).DEBUG = !(<any>window).DEBUG;
+  }
+});
+
+(<any>window).getEntity = (guid: string) => {
+  return EntityManager.getInstance().getEntity({guid: guid});
+}
+
+(<any>window).getComponent = (guid: string, type: string) => {
+  return EntityManager.getInstance().getComponent({guid: guid}, type);
+};;
+
+(<any>window).getTile = (x: number, y: number) => {
+  return Game.getInstance().map.tiles[x][y];
+};;
 
 const game = Game.getInstance();
 game.initialize();

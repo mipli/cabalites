@@ -76,7 +76,7 @@ export class Map {
       const x = Core.Random.get(1, this.width);
       const y = Core.Random.get(1, this.height);
       const vector = new Core.Vector2(x, y);
-      if (this.isWalkable(vector)) {
+      if (this.isWalkable(vector) && this.getTile(vector).isEmpty) {
         return vector;
       }
     }

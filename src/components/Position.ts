@@ -31,13 +31,17 @@ export class Position extends Component {
 
   initialize() {
     if (this.position) {
-      this.game.map.tiles[this.position.x][this.position.y].entity = this.entity;
+      this.game.map.tiles[this.position.x][this.position.y].addEntity(this.entity);
     }
   }
 
   set(value: Core.Vector2) {
-    this.game.map.tiles[this.position.x][this.position.y].entity = null;
+    this.game.map.tiles[this.position.x][this.position.y].removeEntity(this.entity);
     this.position = value;
-    this.game.map.tiles[this.position.x][this.position.y].entity = this.entity;
+    this.game.map.tiles[this.position.x][this.position.y].addEntity(this.entity);
+  }
+
+  delete() {
+    this.game.map.tiles[this.position.x][this.position.y].removeEntity(this.entity);
   }
 }

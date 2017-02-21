@@ -3,5 +3,6 @@ export * from './Position';
 export * from './Sight';
 export * from './Renderable';
 export * from './TurnTaker';
-export * from './Collidable';
 export * from './Knowledge';
+export * from './Openable';
+export * from './Flags';

@@ -1,7 +1,7 @@
 import * as Components from '../components';
 import * as Core from '../core';
+import * as Actions from './index';
 import {IAction} from './IAction';
-import ActionResult from './ActionResult';
 import {IEntity, EntityManager} from '../EntityManager';
 
 export class WalkAction implements IAction {
@@ -53,8 +53,8 @@ export class WalkAction implements IAction {
     this._newPosition = this.positionComponent.vector.add(dir.vector);
   }
 
-  perform(): ActionResult {
+  perform(): boolean {
     this.positionComponent.set(this.newPosition);
-    return new ActionResult(true);
+    return true;
   }
 }

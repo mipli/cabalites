@@ -40,44 +40,59 @@ class RenderingProcessor implements IProcessor {
 
   process() {
     this.renderMap();
-    this.renderEntities();
     this.renderEffects();
   }
 
   private renderMap() {
     this.map.forEach((position: Core.Vector2, tile: Map.Tile) => {
-      let glyph = tile.glyph;
-      if (!this.isVisible(position)) {
-        if (this.hasSeen(position)) {
-          glyph = new Map.Glyph(
-            glyph.glyph,
-            Core.ColorUtils.colorMultiply(glyph.foregroundColor, this.fogOfWarColor),
-            Core.ColorUtils.colorMultiply(glyph.backgroundColor, this.fogOfWarColor)
-          );
-        } else {
-          glyph = new Map.Glyph(Map.Glyph.CHAR_SPACE, 0x111111, 0x111111);
-        }
-      }
-      this.console.setText(glyph.glyph, position.x, position.y);
-      this.console.setForeground(glyph.foregroundColor, position.x, position.y);
-      this.console.setBackground(glyph.backgroundColor, position.x, position.y);
-    });
-  }
-
-  private renderEntities() {
-    for (let obj of this.entityManager.iterateEntityAndComponents(['renderable', 'position'])) {
-      const renderable = <Components.Renderable>(<any>obj.components).renderable;
-      const position = <Components.Position>(<any>obj.components).position;
-      if (this.isVisible(position.vector)) {
-        this.console.setText(renderable.glyph.glyph, position.x, position.y)
-        this.console.setForeground(renderable.glyph.foregroundColor, position.x, position.y);
-        if (renderable.glyph.backgroundColor) {
-          this.console.setBackground(renderable.glyph.backgroundColor, position.x, position.y);
-        }
+      let glyph = tile.glyph.glyph;
+      let foreground = tile.glyph.foregroundColor;
+      let background = tile.glyph.backgroundColor;
+      const entities = tile.getEntities();
+      const visible = this.isVisible(position);
+      const hasSeen = this.hasSeen(position);
+      if (!visible && !hasSeen) {
+          glyph = Map.Glyph.CHAR_SPACE
+          foreground = 0x111111;
+          background = 0x111111;
       } else {
-        this.console.setText(Map.Glyph.CHAR_SPACE, position.x, position.y)
+        if (!visible && hasSeen) {
+          if (entities) {
+            const renderables = entities.filter((entity) => {
+              return (<Components.Flags>this.entityManager.getComponent(entity, 'flags')).isStatic;
+            }).map((entity) => {
+              return <Components.Renderable>this.entityManager.getComponent(entity, 'renderable');
+            }).sort((a: Components.Renderable, b: Components.Renderable) => {
+              return a.level - b.level;
+            });
+            renderables.forEach((renderable) => {
+              glyph = renderable.glyph.glyph;
+              if (renderable.glyph.foregroundColor) foreground = renderable.glyph.foregroundColor;
+              if (renderable.glyph.backgroundColor) background = renderable.glyph.backgroundColor;
+            });
+          }
+          foreground = Core.ColorUtils.colorMultiply(foreground, this.fogOfWarColor);
+          background = Core.ColorUtils.colorMultiply(background, this.fogOfWarColor);
+        } else {
+          if (entities) {
+            const renderables = entities.map((entity) => {
+              return <Components.Renderable>this.entityManager.getComponent(entity, 'renderable');
+            }).sort((a: Components.Renderable, b: Components.Renderable) => {
+              return a.level - b.level;
+            });
+            renderables.forEach((renderable) => {
+              glyph = renderable.glyph.glyph;
+              if (renderable.glyph.foregroundColor) foreground = renderable.glyph.foregroundColor;
+              if (renderable.glyph.backgroundColor) background = renderable.glyph.backgroundColor;
+            });
+          }
+        }
       }
-    }
+
+      this.console.setText(glyph, position.x, position.y);
+      this.console.setForeground(foreground, position.x, position.y);
+      this.console.setBackground(background, position.x, position.y);
+    });
   }
 
   private renderEffects() {
@@ -97,6 +112,9 @@ class RenderingProcessor implements IProcessor {
 
 
   private isVisible(position: Core.Vector2) {
+    if ((<any>window).DEBUG) {
+      return true;
+    }
     return this.sightComponent.isTileVisible(position);
   }
 
