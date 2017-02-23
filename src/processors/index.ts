@@ -1,2 +1,2 @@
-export {IProcessor} from './IProcessor';
+export {IProcessor, IProcessorSortFunction} from './IProcessor';
 export * from './RenderingProcessor';

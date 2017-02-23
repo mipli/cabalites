@@ -1,7 +1,9 @@
-import {IProcessor} from './processors';
-import {IReactiveSystem, IContinuousSystem} from './systems';
+import {IProcessor, IProcessorSortFunction} from './processors';
+import {IReactiveSystem, IContinuousSystem, IReactiveSystemSortFunction, IContinuousSystemSortFunction} from './systems';
 import * as Components from './components';
-import {EntityManager} from './EntityManager';
+import * as Actions from './actions';
+import {IEntity, EntityManager} from './EntityManager';
+import {Scheduler} from './Scheduler';
 
 import {PriorityLinkedList} from './containers';
 
@@ -37,6 +39,7 @@ export default class Engine {
   private renderFunction: (elapsed: number) => void;
 
   private _entityManager: EntityManager;
+  private scheduler: Scheduler;
 
   get entityManager(): EntityManager {
     return this._entityManager;
@@ -61,6 +64,7 @@ export default class Engine {
     });
 
     this.reset();
+    this.scheduler = Scheduler.getInstance();
   }
 
   static getInstance(): Engine {
@@ -78,31 +82,10 @@ export default class Engine {
     this.paused = false;
     this.engineTime = 0;
     this.elapsedTime = 0;
-    this.engineTickLength = 20; // milliseconds per engine tick
-    this.continuousProcessors = new PriorityLinkedList<IProcessor>((a: IProcessor, b: IProcessor) => {
-      if (a.priority < b.priority) {
-        return -1;
-      } else if (a.priority == b.priority) {
-        return 0;
-      }
-      return 1;
-    });
-    this.reactiveSystems = new PriorityLinkedList<IReactiveSystem>((a: IReactiveSystem, b: IReactiveSystem) => {
-      if (a.priority < b.priority) {
-        return -1;
-      } else if (a.priority == b.priority) {
-        return 0;
-      }
-      return 1;
-    });
-    this.continuousSystems = new PriorityLinkedList<IContinuousSystem>((a: IContinuousSystem, b: IContinuousSystem) => {
-      if (a.priority < b.priority) {
-        return -1;
-      } else if (a.priority == b.priority) {
-        return 0;
-      }
-      return 1;
-    });
+    this.engineTickLength = 10; // milliseconds per engine tick
+    this.continuousProcessors = new PriorityLinkedList<IProcessor>(IProcessorSortFunction);
+    this.reactiveSystems = new PriorityLinkedList<IReactiveSystem>(IReactiveSystemSortFunction);
+    this.continuousSystems = new PriorityLinkedList<IContinuousSystem>(IContinuousSystemSortFunction);
     this._entityManager = EntityManager.getInstance();
   }
 
@@ -139,31 +122,58 @@ export default class Engine {
   }
 
   process() {
-    for (let obj of this.entityManager.iterateEntityAndComponents(['turnTaker'])) {
-      const turnTaker = <Components.TurnTaker>(<any>obj.components).turnTaker;
-      const turn: any = turnTaker.takeTurn();
-      let actionPerformed = false;
-      if (turn.actions.length > 0) {
-        while (!actionPerformed && turn.actions.length > 0) {
-          let action = turn.actions.shift();
-          if (action) {
-            for (let system of this.reactiveSystems) {
-              action = system.process(action);
-            }
-            if (!action.cancelled) {
-              actionPerformed = action.perform();
-            }
-          }
-        }
-        this.entityManager.clearDeletedEntities();
-        for (let system of this.continuousSystems) {
-          system.process();
-        }
-        this.entityManager.clearDeletedEntities();
+    const entity = this.scheduler.tick();
+    const turnTaker = <Components.TurnTaker>this.entityManager.getComponent(entity, 'turnTaker');
+    turnTaker.takeTurn(this.scheduler.turn, (actions: Actions.IAction[]) => {
+      if (this.processEntityActions(turnTaker, actions)) {
+        this.scheduler.tickDone();
       }
-    }
+      actions = null;
+    });
     for (let processor of this.continuousProcessors) {
       processor.process();
     }
+  }
+
+  processEntityActions(turnTaker: Components.TurnTaker, actions: Actions.IAction[]): boolean {
+    if (actions.length === 0) {
+      return false;
+    }
+    let actionPerformed = false;
+    let action = actions.shift();
+    while (!actionPerformed && action) {
+      if (action.cost > turnTaker.currentActionPoints) {
+        console.log('Not enough points for', action.type);
+        console.log('You have: ', turnTaker.currentActionPoints);
+        console.log('Action requires: ', action.cost);
+        action = actions.shift();
+        continue;
+      }
+      for (let system of this.reactiveSystems) {
+        action = system.process(action);
+      }
+      if (!action.cancelled) {
+        actionPerformed = action.perform();
+        if (!actionPerformed) {
+          action = actions.shift();
+        }
+      } else {
+        action = actions.shift();
+      }
+    }
+    if (actionPerformed) {
+      this.entityManager.clearDeletedEntities();
+      for (let system of this.continuousSystems) {
+        system.process();
+      }
+      this.entityManager.clearDeletedEntities();
+      if (actionPerformed && action) {
+        turnTaker.useActionPoints(action.cost);
+      }
+      if (turnTaker.currentActionPoints <= 0 || (action && action.type === 'endTurn')) {
+        return true;
+      }
+    }
+    return false;
   }
 }

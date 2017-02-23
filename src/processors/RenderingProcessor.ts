@@ -44,62 +44,66 @@ class RenderingProcessor implements IProcessor {
   }
 
   private renderMap() {
-    this.map.forEach((position: Core.Vector2, tile: Map.Tile) => {
-      let glyph = tile.glyph.glyph;
-      let foreground = tile.glyph.foregroundColor;
-      let background = tile.glyph.backgroundColor;
-      const entities = tile.getEntities();
-      const visible = this.isVisible(position);
-      const hasSeen = this.hasSeen(position);
-      if (!visible && !hasSeen) {
-          glyph = Map.Glyph.CHAR_SPACE
-          foreground = 0x111111;
-          background = 0x111111;
-      } else {
-        if (!visible && hasSeen) {
-          if (entities) {
-            const renderables = entities.filter((entity) => {
-              return (<Components.Flags>this.entityManager.getComponent(entity, 'flags')).isStatic;
-            }).map((entity) => {
-              return <Components.Renderable>this.entityManager.getComponent(entity, 'renderable');
-            }).sort((a: Components.Renderable, b: Components.Renderable) => {
-              return a.level - b.level;
-            });
-            renderables.forEach((renderable) => {
-              glyph = renderable.glyph.glyph;
-              if (renderable.glyph.foregroundColor) foreground = renderable.glyph.foregroundColor;
-              if (renderable.glyph.backgroundColor) background = renderable.glyph.backgroundColor;
-            });
-          }
-          foreground = Core.ColorUtils.colorMultiply(foreground, this.fogOfWarColor);
-          background = Core.ColorUtils.colorMultiply(background, this.fogOfWarColor);
+    for (let x = 0; x < this.map.width; x++) {
+      for (let y = 0; y < this.map.height; y++) {
+        const position = new Core.Vector2(x, y);
+        const tile = this.map.tiles[x][y];
+        let glyph = tile.glyph.glyph;
+        let foreground = tile.glyph.foregroundColor;
+        let background = tile.glyph.backgroundColor;
+        const entities = tile.getEntities();
+        const visible = this.isVisible(position);
+        const hasSeen = this.hasSeen(position);
+        if (!visible && !hasSeen) {
+            glyph = Map.Glyph.CHAR_SPACE
+            foreground = 0x111111;
+            background = 0x111111;
         } else {
-          if (entities) {
-            const renderables = entities.map((entity) => {
-              return <Components.Renderable>this.entityManager.getComponent(entity, 'renderable');
-            }).sort((a: Components.Renderable, b: Components.Renderable) => {
-              return a.level - b.level;
-            });
-            renderables.forEach((renderable) => {
-              glyph = renderable.glyph.glyph;
-              if (renderable.glyph.foregroundColor) foreground = renderable.glyph.foregroundColor;
-              if (renderable.glyph.backgroundColor) background = renderable.glyph.backgroundColor;
-            });
+          if (!visible && hasSeen) {
+            if (entities) {
+              const renderables = entities.filter((entity) => {
+                return (<Components.Flags>this.entityManager.getComponent(entity, 'flags')).isStatic;
+              }).map((entity) => {
+                return <Components.Renderable>this.entityManager.getComponent(entity, 'renderable');
+              }).sort((a: Components.Renderable, b: Components.Renderable) => {
+                return a.level - b.level;
+              });
+              renderables.forEach((renderable) => {
+                glyph = renderable.glyph.glyph;
+                if (renderable.glyph.foregroundColor) foreground = renderable.glyph.foregroundColor;
+                if (renderable.glyph.backgroundColor) background = renderable.glyph.backgroundColor;
+              });
+            }
+            foreground = Core.ColorUtils.colorMultiply(foreground, this.fogOfWarColor);
+            background = Core.ColorUtils.colorMultiply(background, this.fogOfWarColor);
+          } else {
+            if (entities) {
+              const renderables = entities.map((entity) => {
+                return <Components.Renderable>this.entityManager.getComponent(entity, 'renderable');
+              }).sort((a: Components.Renderable, b: Components.Renderable) => {
+                return a.level - b.level;
+              });
+              renderables.forEach((renderable) => {
+                glyph = renderable.glyph.glyph;
+                if (renderable.glyph.foregroundColor) foreground = renderable.glyph.foregroundColor;
+                if (renderable.glyph.backgroundColor) background = renderable.glyph.backgroundColor;
+              });
+            }
           }
         }
-      }
 
-      this.console.setText(glyph, position.x, position.y);
-      this.console.setForeground(foreground, position.x, position.y);
-      this.console.setBackground(background, position.x, position.y);
-    });
+        this.console.setText(glyph, position.x, position.y);
+        this.console.setForeground(foreground, position.x, position.y);
+        this.console.setBackground(background, position.x, position.y);
+      }
+    }
   }
 
   private renderEffects() {
     this.map.forEach((position: Core.Vector2, tile: Map.Tile) => {
       if (!this.isVisible(position)) {
         this.console.setTint(null, position.x, position.y);
-        return;;
+        return;
       }
       const tint = this.effectsHandler.getTileTint(position);
       if (tint) {

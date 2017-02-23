@@ -9,6 +9,9 @@ export class OpenAction implements IAction {
   get type() {
     return 'open';
   }
+  get cost() {
+    return 1;
+  }
 
   private _position: Core.Vector2;
   private _targetPosition: Core.Vector2;

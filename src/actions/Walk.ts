@@ -8,6 +8,9 @@ export class WalkAction implements IAction {
   get type() {
     return 'walk';
   }
+  get cost() {
+    return 3;
+  }
   private _newPosition: Core.Vector2;
   private _position: Core.Vector2;
   private _entity: IEntity;

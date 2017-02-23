@@ -1,29 +1,21 @@
 import {IController} from './IController.ts';
 import {IEntity, EntityManager} from './EntityManager';
+import * as Components from './components';
 import * as Actions from './actions';
 import * as Core from './core';
 import InputHandler from './InputHandler';
 
 export default class InputController implements IController {
-  private actions: Actions.IAction[];
-  private active: boolean;
+  private callback: (actions: Actions.IAction[]) => void;
+  private turnTaker: Components.TurnTaker;
 
   constructor(private entity: IEntity, private entityManager: EntityManager, private inputHandler: InputHandler) {
-    this.active = false;
-    this.actions = [];
     this.bindMovement();
   }
 
-  getActions() {
-    this.active = true;
-    const actions = this.actions;
-    if (this.actions.length > 0) {
-      this.active = false;
-      const current = this.actions;
-      this.actions = [];
-      return current;
-    }
-    return [];
+  getActions(turnTaker: Components.TurnTaker, callback: (actions: Actions.IAction[]) => void) {
+    this.turnTaker = turnTaker;
+    this.callback = callback;
   }
 
   private bindMovement() {
@@ -58,18 +50,31 @@ export default class InputController implements IController {
     this.bindKeyCode(InputHandler.KEY_N, () => {
       this.addMovementAction(Core.Directions.SouthEast);
     });
+
+    this.bindKeyCode(InputHandler.KEY_PERIOD, () => {
+      this.sendActions([new Actions.EndTurnAction()]);
+    });
   }
 
   private bindKeyCode(keyCode: number, func: () => void) {
     this.inputHandler.listen([keyCode], () => {
-      if (this.active) {
-        func();
-      }
+      func();
     });
   }
 
+  private sendActions(actions: Actions.IAction[]) {
+    if (!this.callback) {
+      return;
+    }
+    this.callback(actions);
+    this.turnTaker.active = false;
+    this.callback = null;
+  }
+
   private addMovementAction(direction: Core.DirectionInfo) {
-      this.actions.push(new Actions.WalkAction(this.entity, direction));
-      this.actions.push(new Actions.OpenAction(this.entity, direction));
+    this.sendActions([
+      new Actions.WalkAction(this.entity, direction),
+      new Actions.OpenAction(this.entity, direction)
+    ]);
   }
 }

@@ -7,6 +7,7 @@ import * as Actions from './actions';
 
 import {EntityManager, IEntity} from './EntityManager';
 import InputController from './InputController';
+import RandomWalkController from './RandomWalkController';
 import InputHandler from './InputHandler';
 import PixiConsole from './PixiConsole';
 import Console from './Console';
@@ -61,15 +62,28 @@ export default class Game {
     this.engine.addReactiveSystem(new Systems.CollisionSystem(this.engine.entityManager, this.map));
     this.engine.addContinuousSystem(new Systems.SightSystem());
 
-    const player = this.createPlayer(this.map.width, this.map.height);
-    renderingProcessor.setFocusEntity(player);
+    const player1 = this.createPlayer(this.map.width, this.map.height, 0xaaaaee);
+    renderingProcessor.setFocusEntity(player1);
     this.engine.start();
 
+    const player2 = this.createPlayer(this.map.width, this.map.height, 0xaaeeaa);
+
+    this.createOrc();
+    this.createOrc();
+    this.createOrc();
+    this.createOrc();
+    this.createOrc();
+  }
+
+  createOrc() {
     let guid = this.engine.entityManager.createEntity();
     this.engine.entityManager.addComponent(guid, new Components.Position(this.map.getEmptyPosition()));
     this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('o', 0xdddddd)));
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(15));
+    this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
+      new RandomWalkController(guid)
+    ));
   }
 
   createDoor(x: number, y: number) {
@@ -92,11 +106,12 @@ export default class Game {
   }
 
 
-  createPlayer(width: number, height: number) {
+  createPlayer(width: number, height: number, color: Core.Color) {
     const guid = this.engine.entityManager.createEntity();
     this.engine.entityManager.addComponent(guid, new Components.Position(this.map.getEmptyPosition()));
-    this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('@', 0xdddddd)));
+    this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('@', color)));
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
+    this.engine.entityManager.addComponent(guid, new Components.Tags({player: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(20));
     this.engine.entityManager.addComponent(guid, new Components.Knowledge(width, height));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
