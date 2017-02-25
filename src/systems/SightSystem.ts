@@ -25,8 +25,9 @@ export class SightSystem implements IContinuousSystem {
     this.fov = new Map.FoV();
   }
 
-  process() {
+  process(action: Actions.IAction) {
     for (let obj of this.entityManager.iterateEntityAndComponents(['sight', 'position', 'knowledge'])) {
+      console.log(obj);
       const sight = <Components.Sight>(<any>obj.components).sight;
       const position = <Components.Position>(<any>obj.components).position;
       const knowledge = <Components.Knowledge>(<any>obj.components).knowledge;
@@ -34,15 +35,23 @@ export class SightSystem implements IContinuousSystem {
         return this.map.tiles[position.x][position.y].blocksSight(obj.entity);
       }, this.map.width, this.map.height, sight.radius);
       const visibility = this.fov.calculate(position.vector)
-      sight.setTileVisibility(visibility);
 
       for (let x = 0; x < visibility.length; x++) {
         for (let y = 0; y < visibility[x].length; y++) {
+          const pos = new Core.Vector2(x, y);
           if (visibility[x][y] > 0) {
-            knowledge.markAsSeen(new Core.Vector2(x, y));
+            knowledge.markAsSeen(pos);
+            if (!sight.isTileVisible(pos)) {
+              knowledge.markAsVisible(pos);
+            }
+          } else {
+            if (sight.isTileVisible(pos)) {
+              knowledge.markAsNonVisible(pos);
+            }
           }
         }
       }
+      sight.setTileVisibility(visibility);
     }
   }
 }

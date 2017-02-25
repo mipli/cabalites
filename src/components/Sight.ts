@@ -1,4 +1,5 @@
 import {Component} from './Component';
+import Game from '../Game';
 import * as Core from '../core';
 
 export class Sight extends Component {
@@ -16,7 +17,7 @@ export class Sight extends Component {
   constructor(radius: number) {
     super();
     this._radius = radius;
-    this.tileVisibility = [];
+    this.tileVisibility = Core.Utils.buildMatrix<number>(Game.getInstance().map.width, Game.getInstance().map.height, 0);
   }
 
   setTileVisibility(visiblity: number[][]) {
@@ -24,9 +25,6 @@ export class Sight extends Component {
   }
 
   isTileVisible(position: Core.Vector2): boolean {
-    if (this.tileVisibility[position.x]) {
-      return this.tileVisibility[position.x][position.y] === 1;
-    }
-    return false;
+    return this.tileVisibility[position.x][position.y] === 1;
   }
 }

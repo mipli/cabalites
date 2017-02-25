@@ -1,11 +1,11 @@
 import {IController} from './IController.ts';
-import {IEntity, EntityManager} from './EntityManager';
-import * as Components from './components';
-import * as Actions from './actions';
-import * as Core from './core';
-import InputHandler from './InputHandler';
+import {IEntity, EntityManager} from '../EntityManager';
+import * as Components from '../components';
+import * as Actions from '../actions';
+import * as Core from '../core';
+import InputHandler from '../InputHandler';
 
-export default class InputController implements IController {
+export class InputController implements IController {
   private callback: (actions: Actions.IAction[]) => void;
   private turnTaker: Components.TurnTaker;
 
@@ -52,7 +52,7 @@ export default class InputController implements IController {
     });
 
     this.bindKeyCode(InputHandler.KEY_PERIOD, () => {
-      this.sendActions([new Actions.EndTurnAction()]);
+      this.sendActions([new Actions.EndTurnAction(this.entity)]);
     });
   }
 

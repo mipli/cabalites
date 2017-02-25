@@ -53,6 +53,13 @@ export class EntityManager {
     }
   }
 
+  getTaggedEntities(tag: string) {
+    if (!this.tags[tag]) {
+      return [];
+    }
+    return this.tags[tag];
+  }
+
   public assimilateTags(entity: IEntity) {
     const tagComponent = <Components.Tags>this.getComponent(entity, 'tags');
     this.removeAllTags(entity);

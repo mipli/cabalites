@@ -1,4 +1,5 @@
 import {Component} from './Component';
+import KnowledgeStore from '../KnowledgeStore';
 import * as Core from '../core';
 
 export class Knowledge extends Component {
@@ -6,18 +7,26 @@ export class Knowledge extends Component {
     return 'knowledge';
   }
 
-  private _exploredTiles: boolean[][];
+  private store: KnowledgeStore;
 
-  constructor(width: number, height: number) {
+  constructor(store?: KnowledgeStore) {
     super();
-    this._exploredTiles = Core.Utils.buildMatrix<boolean>(width, height, false);
+    this.store = store ? store : new KnowledgeStore();
   }
 
   markAsSeen(position: Core.Vector2) {
-    this._exploredTiles[position.x][position.y] = true;
+    this.store.markAsSeen(position);
   }
 
   hasSeen(position: Core.Vector2): boolean {
-    return this._exploredTiles[position.x][position.y];
+    return this.store.hasSeen(position);
+  }
+
+  markAsVisible(position: Core.Vector2) {
+    this.store.markAsVisible(position);
+  }
+
+  markAsNonVisible(position: Core.Vector2) {
+    this.store.markAsNonVisible(position);
   }
 }

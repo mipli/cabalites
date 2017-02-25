@@ -1,7 +1,8 @@
 import {IProcessor} from './IProcessor';
 import {EntityManager, IEntity} from '../EntityManager';
-import Console from '../Console';
 import {EffectsHandler, TintEffect} from '../EffectsHandler';
+import KnowledgeStore from '../KnowledgeStore';
+import Console from '../Console';
 import * as Components from '../components'
 import * as Map from '../map';
 import * as Core from '../core';
@@ -13,12 +14,7 @@ class RenderingProcessor implements IProcessor {
   private map: Map.Map;
   private fogOfWarColor: Core.Color
 
-  private focusEntity: IEntity;
-  private sightComponent: Components.Sight;
-  private knowledgeComponent: Components.Knowledge;
-
-
-  constuctor() { } 
+  private knowledgeStore: KnowledgeStore;
 
   get priority() {
     return 100;
@@ -32,10 +28,8 @@ class RenderingProcessor implements IProcessor {
     this.fogOfWarColor = 0x667777;
   }
 
-  setFocusEntity(focusEntity: IEntity) {
-    this.focusEntity = focusEntity;
-    this.sightComponent = <Components.Sight>this.entityManager.getComponent(this.focusEntity, 'sight');
-    this.knowledgeComponent = <Components.Knowledge>this.entityManager.getComponent(this.focusEntity, 'knowledge');
+  setKnowledgeStore(knowledgeStore: KnowledgeStore) {
+    this.knowledgeStore = knowledgeStore;
   }
 
   process() {
@@ -119,11 +113,11 @@ class RenderingProcessor implements IProcessor {
     if ((<any>window).DEBUG) {
       return true;
     }
-    return this.sightComponent.isTileVisible(position);
+    return this.knowledgeStore.isTileVisible(position);
   }
 
   private hasSeen(position: Core.Vector2) {
-    return this.knowledgeComponent.hasSeen(position);
+    return this.knowledgeStore.hasSeen(position);
   }
 }
 

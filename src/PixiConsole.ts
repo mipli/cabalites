@@ -33,12 +33,14 @@ export default class PixiConsole {
   private topLeftPosition: Core.Vector2;
 
   private mouseEventListener: (position: Core.Vector2) => void;
+  private onLoaded: () => void;
 
-  constructor(width: number, height: number, canvasId: string, foreground: Core.Color = 0xffffff, background: Core.Color = 0x000000, mouseEventListener: (position: Core.Vector2) => void) {
+  constructor(width: number, height: number, canvasId: string, foreground: Core.Color = 0xffffff, background: Core.Color = 0x000000, onLoaded: () => void, mouseEventListener: (position: Core.Vector2) => void) {
     this._width = width;
     this._height = height;
 
     this.mouseEventListener = mouseEventListener;
+    this.onLoaded = onLoaded;
 
     this.canvasId = canvasId;
 
@@ -81,6 +83,7 @@ export default class PixiConsole {
     this.initForegroundCells();
     this.loaded = true;
     this.initMouse();
+    this.onLoaded();
   }
 
   private initMouse() {
@@ -165,11 +168,11 @@ export default class PixiConsole {
     }
   }
 
-  addBorder(x: number, y: number, width: number, height: number) {
+  addBorder(x: number, y: number, width: number, height: number, color: Core.Color = 0x444444) {
     const cell = new PIXI.Graphics();
-    cell.lineStyle(1, 0x444444, 0.5);
+    cell.lineStyle(1, Core.ColorUtils.toNumber(color), 0.5);
     cell.beginFill(0, 0);
-    cell.drawRect(x * this.charWidth, y * this.charHeight, x * width * this.charWidth, y * height * this.charHeight);
+    cell.drawRect(x * this.charWidth, y * this.charHeight,  width * this.charWidth,  height * this.charHeight);
     this.stage.addChild(cell);
   }
 
@@ -189,6 +192,9 @@ export default class PixiConsole {
         if (forceDirty || console.isDirty[x][y]) {
           const px = offsetX + x;
           const py = offsetY + y;
+          if (px > this.width || py > this.height) {
+            continue;
+          }
           const ascii = console.text[x][y];
           const texture = (ascii > 0 && ascii <= 255)  ? this.chars[ascii] : null;
           let foreTint = Core.ColorUtils.toNumber(console.fore[x][y]);

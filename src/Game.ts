@@ -1,4 +1,5 @@
 import * as Components from './components';
+import * as Controllers from './controllers';
 import * as Processors from './processors';
 import * as Systems from './systems';
 import * as Core from './core';
@@ -6,8 +7,7 @@ import * as Map from './map';
 import * as Actions from './actions';
 
 import {EntityManager, IEntity} from './EntityManager';
-import InputController from './InputController';
-import RandomWalkController from './RandomWalkController';
+import KnowledgeStore from './KnowledgeStore';
 import InputHandler from './InputHandler';
 import PixiConsole from './PixiConsole';
 import Console from './Console';
@@ -18,6 +18,8 @@ export default class Game {
 
   private engine: Engine;
   private _map: Map.Map;
+
+  private pixi: PixiConsole;
 
   get map() {
     return this._map;
@@ -34,20 +36,27 @@ export default class Game {
   private constructor() { }
 
   initialize() {
-    let p = new PixiConsole(80, 40, 'game', 0xffffff, 0x000000, (event) => { 
+    this.pixi = new PixiConsole(80, 40, 'game', 0xffffff, 0x000000, () => { this.onLoaded() }, (event) => { 
       console.log('Click', event);
       console.log('Tile', this.map.getTile(new Core.Vector2(event.x, event.y)));
     });
-    let c = new Console(80, 35);
+  }
+
+  onLoaded() {
+    const mainConsole = new Console(80, 35);
+    const logConsole = new Console(80, 5);
+
     this.engine = Engine.getInstance();
     this.engine.setRenderFunction((elapsed: number) => {
-      p.blit(c, 0, 0);
-      p.render();
+      this.pixi.blit(mainConsole, 0, 0);
+      this.pixi.blit(logConsole, 0, 35);
+      this.pixi.render();
     });
+    this.pixi.addBorder(0, 35, 80, 5, 0x777777);
 
-    let inputHandler = new InputHandler();
+    const inputHandler = new InputHandler();
 
-    let dungeonGenerator = new Map.DungeonGenerator(80, 35);
+    const dungeonGenerator = new Map.DungeonGenerator(80, 35);
     this._map = dungeonGenerator.generate();
 
     dungeonGenerator.rooms.forEach((room: Map.Room) => {
@@ -56,17 +65,24 @@ export default class Game {
       });
     });
 
-
-    const renderingProcessor = Processors.createRenderingProcessor(c, this.map);
+    const renderingProcessor = Processors.createRenderingProcessor(mainConsole, this.map);
     this.engine.addContinuousProcessor(renderingProcessor);
+    this.engine.addContinuousProcessor(new Processors.MessageDisplayProcessor(logConsole));
     this.engine.addReactiveSystem(new Systems.CollisionSystem(this.engine.entityManager, this.map));
     this.engine.addContinuousSystem(new Systems.SightSystem());
+    const actionLogSystem = new Systems.ActionLogSystem();
+    this.engine.addContinuousSystem(actionLogSystem);
 
-    const player1 = this.createPlayer(this.map.width, this.map.height, 0xaaaaee);
-    renderingProcessor.setFocusEntity(player1);
+    const knowledgeStore = new KnowledgeStore();
+    renderingProcessor.setKnowledgeStore(knowledgeStore);
+
+    (<any>window).knowledge = knowledgeStore;
+    (<any>window).actionLog = actionLogSystem;
+
+    const player1 = this.createPlayer(this.map.width, this.map.height, 0xaaaaee, 'Ninurtach', knowledgeStore);
+    const player2 = this.createPlayer(this.map.width, this.map.height, 0xaaeeaa, 'Shigeko', knowledgeStore);
+
     this.engine.start();
-
-    const player2 = this.createPlayer(this.map.width, this.map.height, 0xaaeeaa);
 
     this.createOrc();
     this.createOrc();
@@ -82,7 +98,7 @@ export default class Game {
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(15));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
-      new RandomWalkController(guid)
+      new Controllers.RandomWalkController(guid)
     ));
   }
 
@@ -106,16 +122,17 @@ export default class Game {
   }
 
 
-  createPlayer(width: number, height: number, color: Core.Color) {
+  createPlayer(width: number, height: number, color: Core.Color, name: string, knowledgeStore: KnowledgeStore) {
     const guid = this.engine.entityManager.createEntity();
     this.engine.entityManager.addComponent(guid, new Components.Position(this.map.getEmptyPosition()));
     this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('@', color)));
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
     this.engine.entityManager.addComponent(guid, new Components.Tags({player: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(20));
-    this.engine.entityManager.addComponent(guid, new Components.Knowledge(width, height));
+    this.engine.entityManager.addComponent(guid, new Components.Name(name));
+    this.engine.entityManager.addComponent(guid, new Components.Knowledge(knowledgeStore));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
-      new InputController(guid, this.engine.entityManager, new InputHandler())
+      new Controllers.InputController(guid, this.engine.entityManager, new InputHandler())
     ));
     return guid;
   }

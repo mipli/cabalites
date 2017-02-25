@@ -1,6 +1,6 @@
 import {Component} from './Component';
-import {IController} from '../IController';
 import {Scheduler} from '../Scheduler';
+import * as Controllers  from '../controllers';
 import * as Actions from '../actions';
 
 export class TurnTaker extends Component {
@@ -19,7 +19,7 @@ export class TurnTaker extends Component {
   get maxActionPoints() { return this._maxActionPoints; }
   get currentActionPoints() { return this._currentActionPoints; }
 
-  constructor(private controller: IController) {
+  constructor(private controller: Controllers.IController) {
     super();
     this._maxActionPoints = 10;
     this._currentActionPoints = 10;

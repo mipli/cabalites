@@ -7,7 +7,7 @@ export interface IReactiveSystem {
 
 export interface IContinuousSystem {
   priority: number;
-  process: () => void;
+  process: (action: IAction) => void;
 }
 
 export const IReactiveSystemSortFunction = (a: IReactiveSystem, b: IReactiveSystem) => {

@@ -103,7 +103,7 @@ export default class Engine {
 
   start() {
     for (let system of this.continuousSystems) {
-      system.process();
+      system.process(null);
     }
     for (let processor of this.continuousProcessors) {
       processor.process();
@@ -143,9 +143,6 @@ export default class Engine {
     let action = actions.shift();
     while (!actionPerformed && action) {
       if (action.cost > turnTaker.currentActionPoints) {
-        console.log('Not enough points for', action.type);
-        console.log('You have: ', turnTaker.currentActionPoints);
-        console.log('Action requires: ', action.cost);
         action = actions.shift();
         continue;
       }
@@ -164,7 +161,7 @@ export default class Engine {
     if (actionPerformed) {
       this.entityManager.clearDeletedEntities();
       for (let system of this.continuousSystems) {
-        system.process();
+        system.process(action);
       }
       this.entityManager.clearDeletedEntities();
       if (actionPerformed && action) {

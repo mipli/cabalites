@@ -1,12 +1,14 @@
 import * as Core from './index';
 
+type gen<T> = () => T;
+
 export namespace Utils {
-  export function buildMatrix<T>(w: number, h: number, value: T): T[][] {
+  export function buildMatrix<T>(w: number, h: number, value: T | gen<T>): T[][] {
     let ret: T[][] = [];
     for ( let x: number = 0; x < w; ++x) {
       ret[x] = [];
       for ( let y: number = 0; y < h; ++y) {
-        ret[x][y] = value;
+        ret[x][y] = typeof value === 'function' ? value() : value;
       }
     }
     return ret;

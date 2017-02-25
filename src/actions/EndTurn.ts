@@ -1,8 +1,8 @@
+import {IEntity, EntityManager} from '../EntityManager';
+import {IAction} from './IAction';
 import * as Components from '../components';
 import * as Core from '../core';
 import * as Actions from './index';
-import {IAction} from './IAction';
-import {IEntity, EntityManager} from '../EntityManager';
 
 export class EndTurnAction implements IAction {
   get type() {
@@ -13,16 +13,17 @@ export class EndTurnAction implements IAction {
   }
 
   private _cancelled: boolean;
+  private _entity: IEntity;
 
-  get cancelled() {
-    return this._cancelled;
-  }
+  get entity() { return this._entity; }
 
+  get cancelled() { return this._cancelled; }
   set cancelled(value) {
     this._cancelled = value;
   }
 
-  constructor() { 
+  constructor(entity: IEntity) { 
+    this._entity = entity;
     this._cancelled = false;
   }
 
