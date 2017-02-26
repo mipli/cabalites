@@ -61,7 +61,9 @@ export default class Game {
 
     dungeonGenerator.rooms.forEach((room: Map.Room) => {
       room.openings.forEach((opening) => {
-        this.createDoor(opening.x, opening.y);
+        if (this._map.tiles[opening.x][opening.y].isEmpty) {
+          this.createDoor(opening.x, opening.y);
+        }
       });
     });
 
@@ -97,6 +99,8 @@ export default class Game {
     this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('o', 0xdddddd)));
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(15));
+    this.engine.entityManager.addComponent(guid, new Components.Health(5));
+    this.engine.entityManager.addComponent(guid, new Components.Info({entityType: 'creature'}));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
       new Controllers.RandomWalkController(guid)
     ));
@@ -105,12 +109,14 @@ export default class Game {
   createDoor(x: number, y: number) {
     const guid = this.engine.entityManager.createEntity();
     this.engine.entityManager.addComponent(guid, new Components.Position(new Core.Vector2(x, y)));
+    this.engine.entityManager.addComponent(guid, new Components.Info({entityType: 'door'}));
     this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('+', 0xaaaaaa)));
     this.engine.entityManager.addComponent(guid, new Components.Flags({static: true, collidable: true, sightBlocking: true}));
     this.engine.entityManager.addComponent(guid, new Components.Openable((entity: IEntity) => {
       const entityManager = EntityManager.getInstance();
       const pos = <Components.Position>entityManager.getComponent(entity, 'position');
       const guid = this.engine.entityManager.createEntity();
+      entityManager.addComponent(guid, new Components.Info({entityType: 'door'}));
       entityManager.addComponent(guid, new Components.Position(new Core.Vector2(x, y)));
       entityManager.addComponent(guid, new Components.Flags({static: true}));
       entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('-', 0xaaaaaa)));
@@ -129,7 +135,8 @@ export default class Game {
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
     this.engine.entityManager.addComponent(guid, new Components.Tags({player: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(20));
-    this.engine.entityManager.addComponent(guid, new Components.Name(name));
+    this.engine.entityManager.addComponent(guid, new Components.Health(10));
+    this.engine.entityManager.addComponent(guid, new Components.Info({name: name, entityType: 'character'}));
     this.engine.entityManager.addComponent(guid, new Components.Knowledge(knowledgeStore));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
       new Controllers.InputController(guid, this.engine.entityManager, new InputHandler())

@@ -28,6 +28,6 @@ export namespace Random {
 
 ((win: any) => {
   const seed = win.options.seed ? win.options.seed : Date.now();
-  console.log('Random seed', seed);
+  win.seed = seed;
   randomizer = new (<any>Math).seedrandom(seed);
 })(window);

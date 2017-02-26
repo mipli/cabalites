@@ -3,6 +3,7 @@ import * as Components from './components';
 
 export interface IEntity {
   guid: string;
+  deleted?: boolean;
 }
 
 export class EntityManager {
@@ -34,6 +35,7 @@ export class EntityManager {
   }
 
   public deleteEntity(entity: IEntity) {
+    entity.deleted = true;
     this.deletion.push(entity);
   }
 

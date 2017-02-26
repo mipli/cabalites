@@ -7,4 +7,5 @@ export * from './Knowledge';
 export * from './Openable';
 export * from './Flags';
 export * from './Tags';
-export * from './Name';
+export * from './Info';
+export * from './Health';

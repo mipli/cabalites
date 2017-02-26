@@ -66,6 +66,9 @@ export class Tile {
   }
 
   addEntity(entity: IEntity) {
+    if (this.entities.length > 0) {
+      console.log('more than 2!', entity);
+    }
     this.entities.push(entity);
   }
 

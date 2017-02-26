@@ -82,6 +82,7 @@ export class OpenAction implements IAction {
     if (!this.openableComponent) {
       return false;
     }
+    console.log('opening', this.entity);
     this.openableComponent.open();
     return true;
   }

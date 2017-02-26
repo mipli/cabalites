@@ -1,5 +1,5 @@
 import {Component} from './Component';
-import {IEntity} from '../EntityManager';
+import {IEntity, EntityManager} from '../EntityManager';
 
 export interface OpenAction {
   (entity: IEntity): boolean

@@ -27,7 +27,6 @@ export class SightSystem implements IContinuousSystem {
 
   process(action: Actions.IAction) {
     for (let obj of this.entityManager.iterateEntityAndComponents(['sight', 'position', 'knowledge'])) {
-      console.log(obj);
       const sight = <Components.Sight>(<any>obj.components).sight;
       const position = <Components.Position>(<any>obj.components).position;
       const knowledge = <Components.Knowledge>(<any>obj.components).knowledge;
