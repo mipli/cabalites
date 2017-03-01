@@ -159,7 +159,6 @@ export default class Engine {
       }
     }
     if (actionPerformed) {
-      this.entityManager.clearDeletedEntities();
       for (let system of this.continuousSystems) {
         system.process(action);
       }
@@ -167,7 +166,7 @@ export default class Engine {
       if (actionPerformed && action) {
         turnTaker.useActionPoints(action.cost);
       }
-      if (turnTaker.currentActionPoints <= 0 || (action && action.type === 'endTurn')) {
+      if (action && action.type === 'endTurn') {
         return true;
       }
     }

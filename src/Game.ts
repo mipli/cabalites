@@ -70,10 +70,14 @@ export default class Game {
     const renderingProcessor = Processors.createRenderingProcessor(mainConsole, this.map);
     this.engine.addContinuousProcessor(renderingProcessor);
     this.engine.addContinuousProcessor(new Processors.MessageDisplayProcessor(logConsole));
-    this.engine.addReactiveSystem(new Systems.CollisionSystem(this.engine.entityManager, this.map));
+
     this.engine.addContinuousSystem(new Systems.SightSystem());
     const actionLogSystem = new Systems.ActionLogSystem();
     this.engine.addContinuousSystem(actionLogSystem);
+    this.engine.addContinuousSystem(new Systems.HealthSystem());
+
+    this.engine.addReactiveSystem(new Systems.CollisionSystem(this.engine.entityManager, this.map));
+    this.engine.addReactiveSystem(new Systems.CombatSystem());
 
     const knowledgeStore = new KnowledgeStore();
     renderingProcessor.setKnowledgeStore(knowledgeStore);
@@ -81,8 +85,9 @@ export default class Game {
     (<any>window).knowledge = knowledgeStore;
     (<any>window).actionLog = actionLogSystem;
 
-    const player1 = this.createPlayer(this.map.width, this.map.height, 0xaaaaee, 'Ninurtach', knowledgeStore);
-    const player2 = this.createPlayer(this.map.width, this.map.height, 0xaaeeaa, 'Shigeko', knowledgeStore);
+    const startingRoom = dungeonGenerator.rooms[0];
+    const player1 = this.createPlayer(startingRoom.x + 1, startingRoom.y + 1, 0xaaaaee, 'Ninurtach', knowledgeStore);
+    const player2 = this.createPlayer(startingRoom.x + 2, startingRoom.y + 2, 0xaaeeaa, 'Shigeko', knowledgeStore);
 
     this.engine.start();
 
@@ -100,7 +105,9 @@ export default class Game {
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(15));
     this.engine.entityManager.addComponent(guid, new Components.Health(5));
+    this.engine.entityManager.addComponent(guid, new Components.Knowledge());
     this.engine.entityManager.addComponent(guid, new Components.Info({entityType: 'creature'}));
+    this.engine.entityManager.addComponent(guid, new Components.Faction({dungeon: true}));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
       new Controllers.RandomWalkController(guid)
     ));
@@ -128,19 +135,21 @@ export default class Game {
   }
 
 
-  createPlayer(width: number, height: number, color: Core.Color, name: string, knowledgeStore: KnowledgeStore) {
-    const guid = this.engine.entityManager.createEntity();
-    this.engine.entityManager.addComponent(guid, new Components.Position(this.map.getEmptyPosition()));
+  createPlayer(x: number, y: number, color: Core.Color, name: string, knowledgeStore: KnowledgeStore) {
+    const guid = { guid: name };
+    this.engine.entityManager.addComponent(guid, new Components.Position(new Core.Vector2(x, y)));
     this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('@', color)));
+    this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
+      new Controllers.InputController(guid, this.engine.entityManager, new InputHandler())
+    ));
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
     this.engine.entityManager.addComponent(guid, new Components.Tags({player: true}));
     this.engine.entityManager.addComponent(guid, new Components.Sight(20));
     this.engine.entityManager.addComponent(guid, new Components.Health(10));
+    this.engine.entityManager.addComponent(guid, new Components.Strength(10));
     this.engine.entityManager.addComponent(guid, new Components.Info({name: name, entityType: 'character'}));
     this.engine.entityManager.addComponent(guid, new Components.Knowledge(knowledgeStore));
-    this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
-      new Controllers.InputController(guid, this.engine.entityManager, new InputHandler())
-    ));
+    this.engine.entityManager.addComponent(guid, new Components.Faction({player: true}));
     return guid;
   }
 }

@@ -58,14 +58,14 @@ export class InputController implements IController {
 
   private bindKeyCode(keyCode: number, func: () => void) {
     this.inputHandler.listen([keyCode], () => {
+      if (!this.callback) {
+        return;
+      }
       func();
     });
   }
 
   private sendActions(actions: Actions.IAction[]) {
-    if (!this.callback) {
-      return;
-    }
     this.callback(actions);
     this.turnTaker.active = false;
     this.callback = null;
@@ -74,6 +74,7 @@ export class InputController implements IController {
   private addMovementAction(direction: Core.DirectionInfo) {
     this.sendActions([
       new Actions.WalkAction(this.entity, direction),
+      new Actions.MeleeAttackAction(this.entity, direction),
       new Actions.OpenAction(this.entity, direction)
     ]);
   }

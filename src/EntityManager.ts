@@ -3,20 +3,19 @@ import * as Components from './components';
 
 export interface IEntity {
   guid: string;
-  deleted?: boolean;
 }
 
 export class EntityManager {
   private static instance: EntityManager;
 
   private entities: {[guid: string]: any[]};
-  private deletion: IEntity[];
+  private deletion: {[guid: string]: IEntity};
 
   private tags: {[tag: string]: IEntity[]};
 
   private constructor() {
     this.entities = {};
-    this.deletion = [];
+    this.deletion = {};
     this.tags = {};
   }
 
@@ -35,8 +34,7 @@ export class EntityManager {
   }
 
   public deleteEntity(entity: IEntity) {
-    entity.deleted = true;
-    this.deletion.push(entity);
+    this.deletion[entity.guid] = entity;
   }
 
   public getEntity(entity: IEntity) {
@@ -44,15 +42,23 @@ export class EntityManager {
   }
 
   public clearDeletedEntities() {
-    while(this.deletion.length > 0) {
-      let entity = this.deletion.pop();
+    for (let guid in this.deletion) {
+      let entity = this.deletion[guid];
       this.entities[entity.guid].map((component) => {
         component.delete();
         return null;
       });
+      for (let tag in this.tags) {
+        const idx = this.tags[tag].findIndex((e) => e.guid === entity.guid);
+        if (idx >= 0) {
+          this.tags[tag].splice(idx, 1);
+        }
+      }
       delete this.entities[entity.guid];
+      delete this.deletion[guid];
       entity = null;
     }
+    this.deletion = {};
   }
 
   getTaggedEntities(tag: string) {
@@ -63,6 +69,9 @@ export class EntityManager {
   }
 
   public assimilateTags(entity: IEntity) {
+    if (this.deletion[entity.guid]) {
+      return;
+    }
     const tagComponent = <Components.Tags>this.getComponent(entity, 'tags');
     this.removeAllTags(entity);
     for (let tag in tagComponent.tags) {
@@ -74,6 +83,9 @@ export class EntityManager {
   }
 
   private addTag(tag: string, entity: IEntity) {
+    if (this.deletion[entity.guid]) {
+      return;
+    }
     if (!this.tags[tag]) {
       this.tags[tag] = [];
     }
@@ -81,12 +93,18 @@ export class EntityManager {
   }
 
   private removeAllTags(entity: IEntity) {
+    if (this.deletion[entity.guid]) {
+      return;
+    }
     for (let tag in this.tags) {
       this.removeTag(tag, entity);
     }
   }
 
   private removeTag(tag: string, entity: IEntity) {
+    if (this.deletion[entity.guid]) {
+      return;
+    }
     if (!this.tags[tag]) {
       return;
     }
@@ -102,6 +120,9 @@ export class EntityManager {
   }
 
   public addComponent(entity: IEntity, component: Components.Component) {
+    if (this.deletion[entity.guid]) {
+      return;
+    }
     if (typeof this.entities[entity.guid] === 'undefined') {
       this.entities[entity.guid] = []
     }
@@ -111,6 +132,9 @@ export class EntityManager {
   }
 
   public getComponent(entity: IEntity, type: string): Components.Component {
+    if (this.deletion[entity.guid]) {
+      return null;
+    }
     const components = this.entities[entity.guid];
     for (let component of components) {
       if (component.type === type) {
@@ -122,6 +146,9 @@ export class EntityManager {
 
   public* iterateEntityAndComponents(componentTypes: string[]): IterableIterator<{entity: IEntity, components: {[type: string]: Components.Component}}> {
     for (let guid in this.entities) {
+      if (this.deletion[guid]) {
+        continue;
+      }
       const components: {[type: string]: Components.Component} = {};
       let foundComponents = 0;
       this.entities[guid].forEach((component) => {

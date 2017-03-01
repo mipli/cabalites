@@ -5,14 +5,15 @@ import {IAction} from './IAction';
 import {IEntity, EntityManager} from '../EntityManager';
 import Game from '../Game';
 
-export class OpenAction implements IAction {
+export class MeleeAttackAction implements IAction {
   get type() {
-    return 'open';
+    return 'meleeAttack';
   }
   get cost() {
-    return 1;
+    return 3;
   }
 
+  private _cancelled: boolean;
   private _position: Core.Vector2;
   private _targetPosition: Core.Vector2;
   private _direction: Core.DirectionInfo;
@@ -21,9 +22,7 @@ export class OpenAction implements IAction {
   private _map: Map.Map;
   private entityManager: EntityManager;
   private positionComponent: Components.Position;
-  private openableComponent: Components.Openable;
-
-  private _cancelled: boolean;
+  private healthComponent: Components.Health;
 
   get entity() {
     return this._entity;
@@ -70,19 +69,19 @@ export class OpenAction implements IAction {
     const entities = tile.getEntities();
     for(let i = 0; i < entities.length; i++) {
       const e = entities[i];
-      const openableComponent = <Components.Openable>this.entityManager.getComponent(e, 'openable');
-      if (openableComponent) {
+      const healthComponent = <Components.Health>this.entityManager.getComponent(e, 'health');
+      if (healthComponent) {
         this._targetEntity = e;
-        this.openableComponent = openableComponent;
+        this.healthComponent = healthComponent;
       }
     }
   }
 
   perform() {
-    if (!this.openableComponent) {
+    if (!this.healthComponent) {
       return false;
     }
-    this.openableComponent.open();
     return true;
   }
 }
+

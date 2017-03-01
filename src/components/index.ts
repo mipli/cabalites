@@ -9,3 +9,5 @@ export * from './Flags';
 export * from './Tags';
 export * from './Info';
 export * from './Health';
+export * from './StatComponent';
+export * from './Faction';

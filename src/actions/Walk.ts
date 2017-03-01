@@ -9,7 +9,7 @@ export class WalkAction implements IAction {
     return 'walk';
   }
   get cost() {
-    return 3;
+    return 2;
   }
   private _newPosition: Core.Vector2;
   private _position: Core.Vector2;

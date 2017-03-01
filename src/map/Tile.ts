@@ -66,9 +66,6 @@ export class Tile {
   }
 
   addEntity(entity: IEntity) {
-    if (this.entities.length > 0) {
-      console.log('more than 2!', entity);
-    }
     this.entities.push(entity);
   }
 
@@ -99,7 +96,7 @@ export class Tile {
       }
       if (!blocked) {
         const flags = <Components.Flags>EntityManager.getInstance().getComponent(entity, 'flags');
-        if (flags.isSightBlocking) {
+        if (flags && flags.isSightBlocking) {
           blocked = true;
         }
       }

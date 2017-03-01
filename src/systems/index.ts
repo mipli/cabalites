@@ -2,3 +2,5 @@ export {IReactiveSystem, IContinuousSystem, IReactiveSystemSortFunction, IContin
 export * from './CollisionSystem';
 export * from './SightSystem';
 export * from './ActionLogSystem';
+export * from './CombatSystem';
+export * from './HealthSystem';
