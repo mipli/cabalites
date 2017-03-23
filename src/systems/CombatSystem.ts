@@ -30,7 +30,7 @@ export class CombatSystem implements IReactiveSystem {
       return meleeAttackAction;
     }
 
-    const attackerFaction = <Components.Faction>EntityManager.getInstance().getComponent(meleeAttackAction.targetEntity, 'faction');
+    const attackerFaction = <Components.Faction>EntityManager.getInstance().getComponent(meleeAttackAction.entity, 'faction');
     const attackerStrength = <Components.Strength>EntityManager.getInstance().getComponent(meleeAttackAction.entity, 'strength');
 
     const targetFaction = <Components.Faction>EntityManager.getInstance().getComponent(meleeAttackAction.targetEntity, 'faction');
