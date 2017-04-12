@@ -33,4 +33,19 @@ export class Tags extends Component {
   initialize() {
     this.entityManager.assimilateTags(this.entity);
   }
+
+  delete() {
+    this.entityManager.deleteTags(this.entity, this.toStringArray());
+  }
+
+  toStringArray() {
+    const tags = [];
+    for (let tag in this.tags) {
+      tag = <string>tag;
+      if (this.tags[tag] === true) {
+        tags.push(tag);
+      }
+    }
+    return tags;
+  }
 }

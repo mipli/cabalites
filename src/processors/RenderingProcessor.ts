@@ -55,17 +55,17 @@ class RenderingProcessor implements IProcessor {
         } else {
           if (!visible && hasSeen) {
             if (entities) {
-              const renderables = entities.filter((entity) => {
-                return (<Components.Flags>this.entityManager.getComponent(entity, 'flags')).isStatic;
-              }).map((entity) => {
-                return <Components.Renderable>this.entityManager.getComponent(entity, 'renderable');
-              }).sort((a: Components.Renderable, b: Components.Renderable) => {
-                return a.level - b.level;
+              const renderables = entities.map((entity) => {
+                return this.entityManager.getComponents(entity, ['flags', 'renderable']);
+              }).filter((o: any) => {
+                return o.flags.isStatic;
+              }).sort((a: any, b: any) => {
+                return a.renderable.level - b.renderable.level;
               });
-              renderables.forEach((renderable) => {
-                glyph = renderable.glyph.glyph;
-                if (renderable.glyph.foregroundColor) foreground = renderable.glyph.foregroundColor;
-                if (renderable.glyph.backgroundColor) background = renderable.glyph.backgroundColor;
+              renderables.forEach((o: any) => {
+                glyph = o.renderable.glyph.glyph;
+                if (o.renderable.glyph.foregroundColor) foreground = o.renderable.glyph.foregroundColor;
+                if (o.renderable.glyph.backgroundColor) background = o.renderable.glyph.backgroundColor;
               });
             }
             foreground = Core.ColorUtils.colorMultiply(foreground, this.fogOfWarColor);
@@ -94,18 +94,24 @@ class RenderingProcessor implements IProcessor {
   }
 
   private renderEffects() {
-    this.map.forEach((position: Core.Vector2, tile: Map.Tile) => {
-      if (!this.isVisible(position)) {
-        this.console.setTint(null, position.x, position.y);
-        return;
-      }
-      const tint = this.effectsHandler.getTileTint(position);
-      if (tint) {
-        this.console.setTint(tint.color, position.x, position.y);
-      } else {
-        this.console.setTint(null, position.x, position.y);
-      }
-    });
+    if (!this.effectsHandler.hasEffects) {
+      return; 
+    }
+    for (let x = 0; x < this.map.width; x++) {
+      for (let y = 0; y < this.map.height; y++) {
+        const position = new Core.Vector2(x, y);
+        if (!this.isVisible(position)) {
+          this.console.setTint(null, position.x, position.y);
+          return;
+        }
+        const tint = this.effectsHandler.getTileTint(position);
+        if (tint) {
+          this.console.setTint(tint.color, position.x, position.y);
+        } else {
+          this.console.setTint(null, position.x, position.y);
+        }
+      };
+    }
   }
 
 

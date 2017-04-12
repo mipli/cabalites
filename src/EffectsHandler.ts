@@ -8,9 +8,10 @@ export interface TintEffect {
 export class EffectsHandler {
   private static instance: EffectsHandler;
   private tints: TintEffect[][];
+  private count: number;
 
-  private constructor() {
-    this.tints = Core.Utils.buildMatrix<TintEffect>(100, 100, null);
+  get hasEffects(): boolean {
+    return this.count > 0;
   }
 
   public static getInstance() {
@@ -20,11 +21,17 @@ export class EffectsHandler {
     return this.instance;
   }
 
+  private constructor() {
+    this.tints = Core.Utils.buildMatrix<TintEffect>(100, 100, null);
+    this.count = 0;
+  }
+
   public getTileTint(position: Core.Vector2) {
     return this.tints[position.x][position.y];
   }
 
   public addTileTint(position: Core.Vector2, color: Core.Color) {
+    this.count++;
     this.tints[position.x][position.y] = {
       position: position,
       color: color 
@@ -32,6 +39,7 @@ export class EffectsHandler {
   }
 
   public removeTileTint(position: Core.Vector2, color?: Core.Color) {
+    this.count = Math.max(this.count - 1, 0);
     this.tints[position.x][position.y] = null;
   }
 }

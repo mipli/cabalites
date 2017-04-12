@@ -92,7 +92,7 @@ export default class Console {
   private setMatrix<T>(matrix: T[][], value: T, x: number, y: number, width: number, height: number) {
     for (let i = x; i < x + width; i++) {
       for (let j = y; j < y + height; j++) {
-        if (matrix[i][j] === value) {
+        if (matrix[i][j] == value) {
           continue;
         }
         matrix[i][j] = value;

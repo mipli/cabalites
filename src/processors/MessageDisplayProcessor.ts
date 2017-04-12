@@ -34,15 +34,11 @@ export class MessageDisplayProcessor implements IProcessor {
       const renderable = <Components.Renderable>EntityManager.getInstance().getComponent(character, 'renderable');
       const info = <Components.Info>EntityManager.getInstance().getComponent(character, 'info');
       const health = <Components.Health>EntityManager.getInstance().getComponent(character, 'health');
-      if (turnTaker.active) {
-        this.console.print('>', 0, y, 0xdddddd);
-      }
 
       this.console.setText(renderable.glyph.glyph, 1, y);
       this.console.setForeground(renderable.glyph.foregroundColor, 1, y);
 
       this.console.print(''+info.name, 2, y, 0xdddddd);
       this.console.print('HP: ' + health.current + '/' + health.max, 15, y, 0xdddddd);
-      this.console.print('AP: ' + turnTaker.currentActionPoints + '/' + turnTaker.maxActionPoints, 26, y, 0xdddddd);
   }
 }

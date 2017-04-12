@@ -1,5 +1,5 @@
 import {IProcessor, IProcessorSortFunction} from './processors';
-import {IReactiveSystem, IContinuousSystem, IReactiveSystemSortFunction, IContinuousSystemSortFunction} from './systems';
+import {IReactiveSystem, IContinuousSystem, IPreTurnSystem, IReactiveSystemSortFunction, IContinuousSystemSortFunction, IPreTurnSystemSortFunction} from './systems';
 import * as Components from './components';
 import * as Actions from './actions';
 import {IEntity, EntityManager} from './EntityManager';
@@ -35,6 +35,7 @@ export default class Engine {
   private continuousProcessors: PriorityLinkedList<IProcessor>;
   private continuousSystems: PriorityLinkedList<IContinuousSystem>;
   private reactiveSystems: PriorityLinkedList<IReactiveSystem>;
+  private preTurnSystems: PriorityLinkedList<IPreTurnSystem>;
 
   private renderFunction: (elapsed: number) => void;
 
@@ -85,6 +86,7 @@ export default class Engine {
     this.engineTickLength = 10; // milliseconds per engine tick
     this.continuousProcessors = new PriorityLinkedList<IProcessor>(IProcessorSortFunction);
     this.reactiveSystems = new PriorityLinkedList<IReactiveSystem>(IReactiveSystemSortFunction);
+    this.preTurnSystems = new PriorityLinkedList<IPreTurnSystem>(IPreTurnSystemSortFunction);
     this.continuousSystems = new PriorityLinkedList<IContinuousSystem>(IContinuousSystemSortFunction);
     this._entityManager = EntityManager.getInstance();
   }
@@ -101,6 +103,10 @@ export default class Engine {
     this.reactiveSystems.push(system);
   }
 
+  addPreTurnSystems(system: IPreTurnSystem) {
+    this.preTurnSystems.push(system);
+  }
+
   start() {
     for (let system of this.continuousSystems) {
       system.process(null);
@@ -113,25 +119,33 @@ export default class Engine {
         return;
       }
       this.elapsedTime = time - this.engineTime;
-      if (this.elapsedTime >= this.engineTickLength) {
-        this.engineTime = time;
-        this.process();
-      }
+      this.process(this.elapsedTime);
       this.renderFunction(time);
     });
   }
 
-  process() {
+  process(time: number) {
     const entity = this.scheduler.tick();
-    const turnTaker = <Components.TurnTaker>this.entityManager.getComponent(entity, 'turnTaker');
-    turnTaker.takeTurn(this.scheduler.turn, (actions: Actions.IAction[]) => {
-      if (this.processEntityActions(turnTaker, actions)) {
+    if (entity) {
+      this.preTurn(entity);
+      const turnTaker = <Components.TurnTaker>this.entityManager.getComponent(entity, 'turnTaker');
+      turnTaker.takeTurn(this.scheduler.time, (actions: Actions.IAction[]) => {
+        if (this.processEntityActions(turnTaker, actions)) {
+          this.scheduler.add(entity, 100);
+        } else {
+          this.scheduler.addInstantaneous(entity);
+        }
         this.scheduler.tickDone();
-      }
-      actions = null;
-    });
+      });
+    }
     for (let processor of this.continuousProcessors) {
       processor.process();
+    }
+  }
+
+  preTurn(entity: IEntity) {
+    for (let system of this.preTurnSystems) {
+      system.process(entity);
     }
   }
 
@@ -142,10 +156,6 @@ export default class Engine {
     let actionPerformed = false;
     let action = actions.shift();
     while (!actionPerformed && action) {
-      if (action.cost > turnTaker.currentActionPoints) {
-        action = actions.shift();
-        continue;
-      }
       for (let system of this.reactiveSystems) {
         action = system.process(action);
       }
@@ -158,18 +168,14 @@ export default class Engine {
         action = actions.shift();
       }
     }
-    if (actionPerformed) {
-      for (let system of this.continuousSystems) {
-        system.process(action);
-      }
-      this.entityManager.clearDeletedEntities();
-      if (actionPerformed && action) {
-        turnTaker.useActionPoints(action.cost);
-      }
-      if (action && action.type === 'endTurn') {
-        return true;
-      }
+    if (!actionPerformed) {
+      return false;
     }
-    return false;
+
+    for (let system of this.continuousSystems) {
+      system.process(action);
+    }
+    this.entityManager.clearDeletedEntities();
+    return true;
   }
 }

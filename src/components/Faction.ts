@@ -24,7 +24,6 @@ export class Faction extends Component {
       dungeon: options.dungeon ? true : false,
       player: options.player ? true : false
     };
-    console.log(this._reputations);
   }
 
   isFriendlyWith(reputations: Reputations): boolean {

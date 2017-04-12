@@ -21,11 +21,7 @@ export default class LogWindow {
       const character = this.characters[i];
       const turnTaker = <Components.TurnTaker>EntityManager.getInstance().getComponent(character, 'turnTaker');
       this.console.setText(' ', 0, i, 80, 1);
-      if (turnTaker.active) {
-        this.console.print('>', 0, i);
-      }
       this.console.print(''+i, 2, i);
-      this.console.print(turnTaker.currentActionPoints + '/' + turnTaker.maxActionPoints, 10, i);
     }
   }
 }

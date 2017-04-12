@@ -1,5 +1,6 @@
 import Game from './Game';
 import * as Core from './core';
+import {IEntity} from './EntityManager';
 
 interface VisibilityInformation {
   value: number,
@@ -37,6 +38,17 @@ export default class KnowledgeStore {
     if (this._tileVisibility[position.x][position.y].viewers <= 0) {
       this._tileVisibility[position.x][position.y].value = 0;
       this._tileVisibility[position.x][position.y].viewers = 0;
+    }
+  }
+
+  *iterateVisiblePositions(): IterableIterator<Core.Vector2> {
+    for (let x = 0; x < this._tileVisibility.length; x++) {
+      for (let y = 0; y < this._tileVisibility[x].length; y++) {
+        const pos = new Core.Vector2(x, y);
+        if (this.isTileVisible(pos)) {
+          yield pos;
+        }
+      }
     }
   }
 }

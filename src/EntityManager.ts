@@ -3,14 +3,15 @@ import * as Components from './components';
 import Game from './Game';
 
 export interface IEntity {
-  guid: string;
+  guid: number;
 }
 
 export class EntityManager {
   private static instance: EntityManager;
 
-  private entities: {[guid: string]: any[]};
-  private deletion: {[guid: string]: IEntity};
+  private entities: {[guid: number]: any[]};
+  private deletion: {[guid: number]: IEntity};
+  private nextGuid: number;
 
   private tags: {[tag: string]: IEntity[]};
 
@@ -18,6 +19,7 @@ export class EntityManager {
     this.entities = {};
     this.deletion = {};
     this.tags = {};
+    this.nextGuid = 1;
   }
 
   static getInstance(): EntityManager {
@@ -28,9 +30,8 @@ export class EntityManager {
   }
 
   public createEntity(): IEntity {
-    const guid = Core.Utils.generateGuid();
     return {
-      guid: guid
+      guid: this.nextGuid++
     }
   }
 
@@ -49,17 +50,21 @@ export class EntityManager {
         component.delete();
         return null;
       });
-      for (let tag in this.tags) {
-        const idx = this.tags[tag].findIndex((e) => e.guid === entity.guid);
-        if (idx >= 0) {
-          this.tags[tag].splice(idx, 1);
-        }
-      }
       delete this.entities[entity.guid];
       delete this.deletion[guid];
       entity = null;
     }
     this.deletion = {};
+  }
+
+  deleteTags(entity: IEntity, tags: string[]) {
+    for (let tag in tags) {
+      const idx = this.tags[tag].findIndex((e) => e.guid === entity.guid);
+      if (idx >= 0) {
+        this.tags[tag].splice(idx, 1);
+      }
+    }
+    
   }
 
   getTaggedEntities(tag: string) {
@@ -191,7 +196,8 @@ export class EntityManager {
   }
 
   public* iterateEntityAndComponents(componentTypes: string[]): IterableIterator<{entity: IEntity, components: {[type: string]: Components.Component}}> {
-    for (let guid in this.entities) {
+    for (let key in this.entities) {
+      const guid = parseInt(key);
       if (this.deletion[guid]) {
         continue;
       }

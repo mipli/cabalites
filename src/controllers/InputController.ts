@@ -8,14 +8,20 @@ import InputHandler from '../InputHandler';
 export class InputController implements IController {
   private callback: (actions: Actions.IAction[]) => void;
   private turnTaker: Components.TurnTaker;
+  private memo: () => void;
 
   constructor(private entity: IEntity, private entityManager: EntityManager, private inputHandler: InputHandler) {
     this.bindMovement();
+    this.memo = null;
   }
 
   getActions(turnTaker: Components.TurnTaker, callback: (actions: Actions.IAction[]) => void) {
     this.turnTaker = turnTaker;
     this.callback = callback;
+    if (this.memo) {
+      this.memo();
+      this.memo = null;
+    }
   }
 
   private bindMovement() {
@@ -59,6 +65,7 @@ export class InputController implements IController {
   private bindKeyCode(keyCode: number, func: () => void) {
     this.inputHandler.listen([keyCode], () => {
       if (!this.callback) {
+        this.memo = func;
         return;
       }
       func();
@@ -67,7 +74,6 @@ export class InputController implements IController {
 
   private sendActions(actions: Actions.IAction[]) {
     this.callback(actions);
-    this.turnTaker.active = false;
     this.callback = null;
   }
 

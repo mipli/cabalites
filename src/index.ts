@@ -22,11 +22,11 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
-(<any>window).getEntity = (guid: string) => {
+(<any>window).getEntity = (guid: number) => {
   return EntityManager.getInstance().getEntity({guid: guid});
 }
 
-(<any>window).getComponent = (guid: string, type: string) => {
+(<any>window).getComponent = (guid: number, type: string) => {
   return EntityManager.getInstance().getComponent({guid: guid}, type);
 };;
 

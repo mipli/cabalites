@@ -71,10 +71,11 @@ export default class Game {
     this.engine.addContinuousProcessor(renderingProcessor);
     this.engine.addContinuousProcessor(new Processors.MessageDisplayProcessor(logConsole));
 
-    this.engine.addContinuousSystem(new Systems.SightSystem());
     const actionLogSystem = new Systems.ActionLogSystem();
     this.engine.addContinuousSystem(actionLogSystem);
     this.engine.addContinuousSystem(new Systems.HealthSystem());
+
+    this.engine.addPreTurnSystems(new Systems.SightSystem());
 
     this.engine.addReactiveSystem(new Systems.CollisionSystem(this.engine.entityManager, this.map));
     this.engine.addReactiveSystem(new Systems.CombatSystem());
@@ -87,15 +88,12 @@ export default class Game {
 
     const startingRoom = dungeonGenerator.rooms[0];
     const player1 = this.createPlayer(startingRoom.x + 1, startingRoom.y + 1, 0xaaaaee, 'Ninurtach', knowledgeStore);
-    const player2 = this.createPlayer(startingRoom.x + 2, startingRoom.y + 2, 0xaaeeaa, 'Shigeko', knowledgeStore);
 
     this.engine.start();
 
-    this.createOrc();
-    this.createOrc();
-    this.createOrc();
-    this.createOrc();
-    this.createOrc();
+    for (let o = 0; o < 10; o++) {
+      this.createOrc();
+    }
   }
 
   createOrc() {
@@ -109,7 +107,7 @@ export default class Game {
     this.engine.entityManager.addComponent(guid, new Components.Info({entityType: 'creature'}));
     this.engine.entityManager.addComponent(guid, new Components.Faction({dungeon: true}));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(
-      new Controllers.RandomWalkController(guid)
+      new Controllers.FollowAttackController(guid)
     ));
   }
 
@@ -136,7 +134,7 @@ export default class Game {
 
 
   createPlayer(x: number, y: number, color: Core.Color, name: string, knowledgeStore: KnowledgeStore) {
-    const guid = { guid: name };
+    const guid = this.engine.entityManager.createEntity();
     this.engine.entityManager.addComponent(guid, new Components.Position(new Core.Vector2(x, y)));
     this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('@', color)));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(

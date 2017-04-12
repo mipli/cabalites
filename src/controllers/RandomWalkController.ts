@@ -12,6 +12,5 @@ export class RandomWalkController implements IController {
       new Actions.WalkAction(this.entity, Core.Random.getRandomIndex(Core.Directions.All)),
       new Actions.EndTurnAction(this.entity)
     ]);
-    turnTaker.active = false;
   }
 }

@@ -7,3 +7,4 @@ export var utils = util;
 export {default as Heap} from './Heap';
 export {default as LinkedList} from './LinkedList';
 export {default as PriorityLinkedList} from './PriorityLinkedList.ts';
+export {default as PriorityQueue} from './PriorityQueue.ts';

@@ -7,26 +7,27 @@ export class Knowledge extends Component {
     return 'knowledge';
   }
 
-  private store: KnowledgeStore;
+  private _store: KnowledgeStore;
+  get store() { return this._store; }
 
   constructor(store?: KnowledgeStore) {
     super();
-    this.store = store ? store : new KnowledgeStore();
+    this._store = store ? store : new KnowledgeStore();
   }
 
   markAsSeen(position: Core.Vector2) {
-    this.store.markAsSeen(position);
+    this._store.markAsSeen(position);
   }
 
   hasSeen(position: Core.Vector2): boolean {
-    return this.store.hasSeen(position);
+    return this._store.hasSeen(position);
   }
 
   markAsVisible(position: Core.Vector2) {
-    this.store.markAsVisible(position);
+    this._store.markAsVisible(position);
   }
 
   markAsNonVisible(position: Core.Vector2) {
-    this.store.markAsNonVisible(position);
+    this._store.markAsNonVisible(position);
   }
 }

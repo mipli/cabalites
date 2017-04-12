@@ -1,18 +1,10 @@
 export class Vector2 {
-  private _x: number;
-  private _y: number;
+  public x: number;
+  public y: number;
 
   constructor(x: number, y: number) {
-    this._x = x;
-    this._y = y;
-  }
-
-  get x(): number {
-    return this._x;
-  }
-
-  get y(): number {
-    return this._y;
+    this.x = x;
+    this.y = y;
   }
 
   get length(): number {
@@ -20,7 +12,7 @@ export class Vector2 {
   }
 
   toString(): string {
-    return this._x + ', ' + this._y;
+    return this.x + ', ' + this.y;
   }
 
   equals(v: Vector2): boolean {
