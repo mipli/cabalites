@@ -11,36 +11,47 @@ export class FollowAttackController implements IController {
   private positionComponent: Components.Position;
   private factionComponent: Components.Faction;
   private knowledgeComponent: Components.Knowledge
+  private sightComponent: Components.Sight
+  private entityManager: EntityManager;
   private map: Map.Map;
 
   constructor(entity: IEntity) { 
     this.entity = entity;
-    this.factionComponent = <Components.Faction>EntityManager.getInstance().getComponent(this.entity, 'faction');
-    this.positionComponent = <Components.Position>EntityManager.getInstance().getComponent(this.entity, 'position');
-    this.knowledgeComponent = <Components.Knowledge>EntityManager.getInstance().getComponent(this.entity, 'knowledge');
+    this.entityManager = EntityManager.getInstance();
+    this.factionComponent = <Components.Faction>this.entityManager.getComponent(this.entity, 'faction');
+    this.sightComponent = <Components.Sight>this.entityManager.getComponent(this.entity, 'sight');
+    this.positionComponent = <Components.Position>this.entityManager.getComponent(this.entity, 'position');
+    this.knowledgeComponent = <Components.Knowledge>this.entityManager.getComponent(this.entity, 'knowledge');
     this.map = Game.getInstance().map;
   }
 
   getActions(turnTaker: Components.TurnTaker, callback: (actions: Actions.IAction[]) => void) {
-    for (let pos of this.knowledgeComponent.store.iterateVisiblePositions()) {
-      if (pos.equals(this.positionComponent.vector)) {
+    let target: Core.Vector2 = null;
+    for (let obj of this.entityManager.iterateEntitiesAndComponentsWithinRadius(this.positionComponent.vector, this.sightComponent.radius, ['position', 'faction'])) {
+      if (obj.entity.guid === this.entity.guid) {
         continue;
       }
-      const tile = this.map.getTile(pos);
-      const entities = tile.getEntities();
-      if (entities.length === 0) {
+      const targetFaction = <Components.Faction>(<any>obj.components).faction;
+      const targetPosition = <Components.Position>(<any>obj.components).position;
+
+      if (this.positionComponent.vector.distanceSquared(targetPosition.vector) <= 2) {
         continue;
       }
-      for (let i = 0; i < entities.length; i++) {
-        const entity = entities[i];
-        const targetFaction = <Components.Faction>EntityManager.getInstance().getComponent(entity, 'faction');
-        if (targetFaction && !this.factionComponent.isFriendlyWith(targetFaction.reputations)) {
-          console.log(pos, entity);
-        }
+
+      if (this.knowledgeComponent.store.isTileVisible(targetPosition.vector) && 
+          !this.factionComponent.isFriendlyWith(targetFaction.reputations)) {
+          target = targetPosition.vector;
       }
     }
-    callback([
-      new Actions.WalkAction(this.entity, Core.Random.getRandomIndex(Core.Directions.All))
-    ]);
+    const actions = [];
+    if (target) {
+      const path = this.map.findPath(this.positionComponent.vector, target);
+      if (path.length > 1) {
+        const direction = Core.Directions.getDirectionTowards(this.positionComponent.vector, path.pop());
+        actions.push(new Actions.WalkAction(this.entity, direction));
+      }
+    }
+    actions.push(new Actions.EndTurnAction(this.entity));
+    callback(actions);
   }
 }

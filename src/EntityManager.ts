@@ -8,6 +8,7 @@ export interface IEntity {
 
 export class EntityManager {
   private static instance: EntityManager;
+  private game: Game;
 
   private entities: {[guid: number]: any[]};
   private deletion: {[guid: number]: IEntity};
@@ -20,6 +21,7 @@ export class EntityManager {
     this.deletion = {};
     this.tags = {};
     this.nextGuid = 1;
+    this.game = Game.getInstance();
   }
 
   static getInstance(): EntityManager {
@@ -162,7 +164,7 @@ export class EntityManager {
         components[component.type] = component;
       }
     }
-    if (foundComponents === 0) {
+    if (foundComponents !== types.length) {
       return null;
     }
     return components;
@@ -171,13 +173,13 @@ export class EntityManager {
 
   public* iterateEntitiesAndComponentsWithinRadius(origin: Core.Vector2, radius: number, types: string[]): IterableIterator<{entity: IEntity, components: {[type: string]: Components.Component}}> {
     const minX = Math.max(0, origin.x - radius);
-    const maxX = Math.min(Game.getInstance().map.width, origin.x + radius);
+    const maxX = Math.min(this.game.map.width, origin.x + radius);
     const minY = Math.max(0, origin.y - radius);
-    const maxY = Math.min(Game.getInstance().map.height, origin.y + radius);
+    const maxY = Math.min(this.game.map.height, origin.y + radius);
 
     for (let x = minX; x < maxX; x++) {
       for (let y = minY; y < maxY; y++) {
-        const entities = Game.getInstance().map.getTile(new Core.Vector2(x, y)).getEntities();
+        const entities = this.game.map.getTile(new Core.Vector2(x, y)).getEntities();
         if (entities.length === 0) {
           continue;
         }

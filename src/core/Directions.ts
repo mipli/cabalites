@@ -91,6 +91,32 @@ export namespace Directions {
     }
     return Directions.All[idx];
   };
+
+  export function getDirectionTowards(source: Vector2, target: Vector2): DirectionInfo {
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const adx = Math.abs(dx);
+    const ady = Math.abs(dy);
+
+    if (dx === 0 && dy === 0) {
+      return null;
+    }
+
+    if (adx > ady) {
+      if (dx < 0) return Directions.West;
+      if (dx > 0) return Directions.East;
+    } 
+    if (ady > adx) {
+      if (dy < 0) return Directions.North;
+      if (dy > 0) return Directions.South;
+    }
+    if (dy < 0 && dx < 0) return Directions.NorthWest;
+    if (dy > 0 && dx < 0) return Directions.SouthWest;
+    if (dy < 0 && dx > 0) return Directions.NorthEast;
+    if (dy > 0 && dx > 0) return Directions.SouthEast;
+
+    return null;
+  }
 };
 
 Directions.North.setOpposite(Directions.South);

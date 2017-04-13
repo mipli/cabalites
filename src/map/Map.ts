@@ -12,7 +12,7 @@ export class Map {
   }
   public tiles: _Map.Tile[][];
 
-  //private astar: _Map.Astar;
+  private astar: _Map.Astar;
 
   constructor(w: number, h: number) {
     this._width = w;
@@ -25,22 +25,19 @@ export class Map {
       }
     }
 
-/*
     this.astar = new _Map.Astar(
       (pos: Core.Vector2) => {
         return this.isWalkable(pos);
       },
-      Core.Vector2.getManhattanDistance
+      (a: Core.Vector2, b: Core.Vector2) => {
+        return a.getManhattanDistance(b);
+      }
     );
-    */
   }
 
-/*
-  getPath(start: Core.Vector2, target: Core.Vector2) {
-    let path =  this.astar.findPath(start, target);
-    return path;
+  findPath(start: Core.Vector2, target: Core.Vector2) {
+    return this.astar.findPath(start, target);
   }
-  */
 
   private isValidPosition(position: Core.Vector2): boolean {
     if (position.x < 0 || position.x >= this.width || position.y < 0 || position.y >= this.height) {
@@ -91,6 +88,7 @@ export class Map {
     if (!tile.walkable) {
       return false;
     }
+    /*
     if (sourceDirection && sourceDirection.type === Core.DirectionType.Ordinal) {
       const ccDirection = Core.Directions.getClockwiseDirection(sourceDirection.opposite);
       const cDirection = Core.Directions.getCounterClockwiseDirection(sourceDirection.opposite);
@@ -99,6 +97,7 @@ export class Map {
         return false;
       }
     }
+    */
     return true;
   }
 }

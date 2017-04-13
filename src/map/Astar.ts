@@ -1,39 +1,54 @@
-/*
-import * as Collections from 'typescript-collections';
+import {PriorityQueue} from '../containers';
 import * as Core from '../core';
+
+interface distanceFunction {
+  (a: Core.Vector2, b: Core.Vector2): number;
+}
 
 export class Astar {
   constructor(
-    private walkableCheck: (pos: Core.Point) => boolean,
-    private distance: (a: Core.Point, b: Core.Point) => number
+    private walkableCheck: (pos: Core.Vector2) => boolean,
+    private distance: distanceFunction
   ) {
   }
 
-  findPath(start: Core.Point, target: Core.Point): Core.Point[] {
-    if (Core.Point.equals(start, target)) {
+  private static createPositionSorter = (target: Core.Vector2, dist: distanceFunction) => {
+    return (a: Core.Vector2, b: Core.Vector2) => {
+      const aDistance = dist(a, target);
+      const bDistance = dist(b, target);
+      return bDistance - aDistance;
+    };
+  };
+
+  private getNeighbours(position: Core.Vector2): Core.Vector2[] {
+    const neighbours: Core.Vector2[] = [];
+    Core.Directions.All.forEach((dir: Core.DirectionInfo) => {
+      neighbours.push(position.add(dir.vector));
+    });
+    return neighbours;
+  }
+
+  findPath(start: Core.Vector2, target: Core.Vector2): Core.Vector2[] {
+    if (start.equals(target)) {
       return [];
     }
 
     let path = []
-    let frontier = new Collections.PriorityQueue((a: Core.Point, b: Core.Point) => {
-      const aDistance = this.distance(a, target);
-      const bDistance = this.distance(b, target);
-      return bDistance - aDistance;
-    });
-    let cameFrom = {};
+    let frontier = new PriorityQueue<Core.Vector2>(Astar.createPositionSorter(target, this.distance));
+    let cameFrom: {[pos: string]: Core.Vector2} = {};
 
     frontier.enqueue(start);
 
     cameFrom[start.toString()] = null;
 
-    while (!frontier.isEmpty()) {
+    while(!frontier.isEmpty) {
       let current = frontier.dequeue();
 
-      if (Core.Point.equals(current, target)) {
+      if (current.equals(target)) {
         break;
       }
 
-      let neighbours = Core.Point.getNeighbours(current, -1, -1);
+      let neighbours = this.getNeighbours(current);
       neighbours.forEach((neighbour) => {
         if (!this.walkableCheck(neighbour)) {
           return;
@@ -49,12 +64,13 @@ export class Astar {
 
     let pathNode = target;
     path.push(pathNode);
-    while (pathNode && !Core.Point.equals(pathNode, start)) {
+    while (pathNode && !pathNode.equals(start)) {
         pathNode = cameFrom[pathNode.toString()];
         path.unshift(pathNode);
     }
 
     return path;
   }
+
+
 }
-*/

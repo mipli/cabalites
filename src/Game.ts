@@ -101,7 +101,7 @@ export default class Game {
     this.engine.entityManager.addComponent(guid, new Components.Position(this.map.getEmptyPosition()));
     this.engine.entityManager.addComponent(guid, new Components.Renderable(new Map.Glyph('o', 0xdddddd)));
     this.engine.entityManager.addComponent(guid, new Components.Flags({collidable: true}));
-    this.engine.entityManager.addComponent(guid, new Components.Sight(15));
+    this.engine.entityManager.addComponent(guid, new Components.Sight(5));
     this.engine.entityManager.addComponent(guid, new Components.Health(5));
     this.engine.entityManager.addComponent(guid, new Components.Knowledge());
     this.engine.entityManager.addComponent(guid, new Components.Info({entityType: 'creature'}));

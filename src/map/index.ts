@@ -5,4 +5,4 @@ export * from './Glyph';
 export * from './Tile';
 export * from './FoV';
 export * from './Room';
-// export * from './Astar';
+export * from './Astar';
