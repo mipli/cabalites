@@ -46,9 +46,20 @@ export class FollowAttackController implements IController {
     const actions = [];
     if (target) {
       const path = this.map.findPath(this.positionComponent.vector, target);
+      console.log('start', this.positionComponent.vector.toString());
+      path.forEach((p) => {
+        if (!p) {
+          console.log('null');
+          return;
+        }
+        console.log(p.toString());
+      });
+      console.log('end', target.toString());
       if (path.length > 1) {
-        const direction = Core.Directions.getDirectionTowards(this.positionComponent.vector, path.pop());
-        actions.push(new Actions.WalkAction(this.entity, direction));
+        const direction = Core.Directions.getDirectionTowards(this.positionComponent.vector, path[1]);
+        if (direction) {
+          actions.push(new Actions.WalkAction(this.entity, direction));
+        }
       }
     }
     actions.push(new Actions.EndTurnAction(this.entity));

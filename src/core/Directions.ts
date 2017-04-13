@@ -93,29 +93,28 @@ export namespace Directions {
   };
 
   export function getDirectionTowards(source: Vector2, target: Vector2): DirectionInfo {
+    if (source.equals(target)) {
+      return null;
+    }
+    console.log('direction', source.toString(), target.toString());
     const dx = target.x - source.x;
     const dy = target.y - source.y;
     const adx = Math.abs(dx);
     const ady = Math.abs(dy);
 
-    if (dx === 0 && dy === 0) {
-      return null;
-    }
+    const x = adx === 0 ? 0 : dx / adx;
+    const y = ady === 0 ? 0 : dy / ady;
+    console.log(x, y);
 
-    if (adx > ady) {
-      if (dx < 0) return Directions.West;
-      if (dx > 0) return Directions.East;
-    } 
-    if (ady > adx) {
-      if (dy < 0) return Directions.North;
-      if (dy > 0) return Directions.South;
-    }
-    if (dy < 0 && dx < 0) return Directions.NorthWest;
-    if (dy > 0 && dx < 0) return Directions.SouthWest;
-    if (dy < 0 && dx > 0) return Directions.NorthEast;
-    if (dy > 0 && dx > 0) return Directions.SouthEast;
+    if (x === 1 && y === 0)  return Directions.East;
+    if (x === -1 && y === 0) return Directions.West;
+    if (x === 0 && y === 1)  return Directions.South;
+    if (x === 0 && y === -1) return Directions.North;
 
-    return null;
+    if (x === 1 && y === 1)  return Directions.SouthEast;
+    if (x === -1 && y === 1) return Directions.SouthWest;
+    if (x === 1 && y === -1)  return Directions.NorthEast;
+    if (x === -1 && y === -1) return Directions.NorthWest;
   }
 };
 

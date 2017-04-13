@@ -14,7 +14,7 @@ export default class Heap<T> {
   }
 
   get isEmpty() {
-    return this.count > 0;
+    return this.count === 0;
   }
 
   private getLeftChildIndex(idx: number): number {

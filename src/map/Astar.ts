@@ -16,7 +16,7 @@ export class Astar {
     return (a: Core.Vector2, b: Core.Vector2) => {
       const aDistance = dist(a, target);
       const bDistance = dist(b, target);
-      return bDistance - aDistance;
+      return aDistance - bDistance;
     };
   };
 
@@ -71,6 +71,4 @@ export class Astar {
 
     return path;
   }
-
-
 }

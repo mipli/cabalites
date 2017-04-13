@@ -30,7 +30,7 @@ export class Map {
         return this.isWalkable(pos);
       },
       (a: Core.Vector2, b: Core.Vector2) => {
-        return a.getManhattanDistance(b);
+        return a.distanceSquared(b);
       }
     );
   }

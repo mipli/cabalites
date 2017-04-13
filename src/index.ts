@@ -15,6 +15,7 @@ if (hash) {
 
 import {EntityManager} from './EntityManager';
 import Game from './Game';
+import * as Core from './core';
 
 window.addEventListener('keydown', (event) => {
   if (event.keyCode === 70) { //F
@@ -33,6 +34,12 @@ window.addEventListener('keydown', (event) => {
 (<any>window).getTile = (x: number, y: number) => {
   return Game.getInstance().map.tiles[x][y];
 };;
+
+(<any>window).getGame = () => {
+  return Game.getInstance();
+};;
+
+(<any>window).Core = Core;
 
 const game = Game.getInstance();
 game.initialize();
