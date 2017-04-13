@@ -34,4 +34,8 @@ export namespace Utils {
       });
     });
   }
+
+  export function constrainValue(min: number, x: number, max: number) {
+    return Math.min(Math.max(x, min), max);
+  }
 }

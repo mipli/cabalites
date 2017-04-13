@@ -15,17 +15,21 @@ export class SightSystem implements IPreTurnSystem {
   private entityManager: EntityManager;
   private effectsHandler: EffectsHandler;
   private map: Map.Map;
-  private fov: Map.FoV;
+  private fov: Map.Shadowcast;
 
   constructor() {
     this.entityManager = EntityManager.getInstance();
     this.effectsHandler = EffectsHandler.getInstance();
     this.map = Game.getInstance().map;
 
-    this.fov = new Map.FoV();
+    this.fov = new Map.Shadowcast(this.map.width, this.map.height)
   }
 
   process(entity: IEntity) {
+    this.fov.setIsTransparent((x: number, y: number) => {
+      return !this.map.tiles[x][y].blocksSight(entity);
+    });
+
     const components = this.entityManager.getComponents(entity, ['sight', 'position', 'knowledge']);
     const sight = <Components.Sight>(<any>components).sight;
     const position = <Components.Position>(<any>components).position;
@@ -33,15 +37,12 @@ export class SightSystem implements IPreTurnSystem {
     if (!(sight || position || knowledge)) {
       return false;
     }
-    this.fov.init((position) => {
-      return this.map.tiles[position.x][position.y].blocksSight(entity);
-    }, this.map.width, this.map.height, sight.radius);
-    const visibility = this.fov.calculate(position.vector)
+    const visibility = this.fov.computeFov(position.vector.x, position.vector.y, sight.radius);
 
     for (let x = 0; x < visibility.length; x++) {
       for (let y = 0; y < visibility[x].length; y++) {
         const pos = new Core.Vector2(x, y);
-        if (visibility[x][y] > 0) {
+        if (visibility[x][y]) {
           knowledge.markAsSeen(pos);
           if (!sight.isTileVisible(pos)) {
             knowledge.markAsVisible(pos);

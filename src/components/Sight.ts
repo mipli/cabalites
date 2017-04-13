@@ -12,19 +12,23 @@ export class Sight extends Component {
     return this._radius;
   }
 
-  private tileVisibility: number[][];
+  private tileVisibility: boolean[][];
 
   constructor(radius: number) {
     super();
     this._radius = radius;
-    this.tileVisibility = Core.Utils.buildMatrix<number>(Game.getInstance().map.width, Game.getInstance().map.height, 0);
+    this.tileVisibility = Core.Utils.buildMatrix<boolean>(Game.getInstance().map.width, Game.getInstance().map.height, false);
   }
 
-  setTileVisibility(visiblity: number[][]) {
+  getTileVisibility(): boolean[][] {
+    return this.tileVisibility;
+  }
+
+  setTileVisibility(visiblity: boolean[][]) {
     this.tileVisibility = visiblity;
   }
 
   isTileVisible(position: Core.Vector2): boolean {
-    return this.tileVisibility[position.x][position.y] === 1;
+    return this.tileVisibility[position.x][position.y];
   }
 }
