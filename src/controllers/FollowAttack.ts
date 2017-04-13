@@ -34,10 +34,6 @@ export class FollowAttackController implements IController {
       const targetFaction = <Components.Faction>(<any>obj.components).faction;
       const targetPosition = <Components.Position>(<any>obj.components).position;
 
-      if (this.positionComponent.vector.distanceSquared(targetPosition.vector) <= 2) {
-        continue;
-      }
-
       if (this.knowledgeComponent.store.isTileVisible(targetPosition.vector) && 
           !this.factionComponent.isFriendlyWith(targetFaction.reputations)) {
           target = targetPosition.vector;
@@ -46,20 +42,14 @@ export class FollowAttackController implements IController {
     const actions = [];
     if (target) {
       const path = this.map.findPath(this.positionComponent.vector, target);
-      console.log('start', this.positionComponent.vector.toString());
-      path.forEach((p) => {
-        if (!p) {
-          console.log('null');
-          return;
-        }
-        console.log(p.toString());
-      });
-      console.log('end', target.toString());
-      if (path.length > 1) {
+      if (path.length > 2) {
         const direction = Core.Directions.getDirectionTowards(this.positionComponent.vector, path[1]);
         if (direction) {
           actions.push(new Actions.WalkAction(this.entity, direction));
         }
+      } else if (path.length === 2) {
+        const direction = Core.Directions.getDirectionTowards(this.positionComponent.vector, path[1]);
+        actions.push(new Actions.MeleeAttackAction(this.entity, direction));
       }
     }
     actions.push(new Actions.EndTurnAction(this.entity));

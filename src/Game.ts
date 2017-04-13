@@ -104,6 +104,7 @@ export default class Game {
     this.engine.entityManager.addComponent(guid, new Components.Sight(5));
     this.engine.entityManager.addComponent(guid, new Components.Health(5));
     this.engine.entityManager.addComponent(guid, new Components.Knowledge());
+    this.engine.entityManager.addComponent(guid, new Components.Strength(5));
     this.engine.entityManager.addComponent(guid, new Components.Info({entityType: 'creature'}));
     this.engine.entityManager.addComponent(guid, new Components.Faction({dungeon: true}));
     this.engine.entityManager.addComponent(guid, new Components.TurnTaker(

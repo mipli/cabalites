@@ -75,9 +75,11 @@ export class MeleeAttackAction implements IAction {
         this.healthComponent = healthComponent;
       }
     }
+    console.log('target health', this.healthComponent);
   }
 
   perform() {
+    console.log('performing attack');
     if (!this.healthComponent) {
       return false;
     }

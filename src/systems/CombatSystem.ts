@@ -29,6 +29,7 @@ export class CombatSystem implements IReactiveSystem {
       meleeAttackAction.cancelled = true;
       return meleeAttackAction;
     }
+    console.log('processing melee attack');
 
     const attackerFaction = <Components.Faction>EntityManager.getInstance().getComponent(meleeAttackAction.entity, 'faction');
     const attackerStrength = <Components.Strength>EntityManager.getInstance().getComponent(meleeAttackAction.entity, 'strength');
@@ -37,6 +38,7 @@ export class CombatSystem implements IReactiveSystem {
     const targetHealth = <Components.Health>EntityManager.getInstance().getComponent(meleeAttackAction.targetEntity, 'health');
 
     if (attackerFaction && targetFaction && attackerFaction.isFriendlyWith(targetFaction.reputations)) {
+      console.log('faction match');
       meleeAttackAction.cancelled = true;
       return meleeAttackAction;
     }
